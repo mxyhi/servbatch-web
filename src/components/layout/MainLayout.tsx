@@ -8,6 +8,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   MonitorOutlined,
+  ApiOutlined,
 } from "@ant-design/icons";
 import { Link, Outlet, useLocation } from "react-router-dom";
 
@@ -43,6 +44,11 @@ const MainLayout: React.FC = () => {
       key: "/servers",
       icon: <CloudServerOutlined />,
       label: <Link to="/servers">服务器管理</Link>,
+    },
+    {
+      key: "/proxies",
+      icon: <ApiOutlined />,
+      label: <Link to="/proxies">代理管理</Link>,
     },
     {
       key: "/tasks",

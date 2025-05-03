@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  Table,
-  Button,
-  Space,
-  Modal,
-  Tag,
-  Select,
-  message,
-  Popconfirm,
-} from "antd";
+import { Table, Button, Space, Modal, Tag, Select, Popconfirm } from "antd";
+import { message } from "../../utils/message";
 import { DeleteOutlined, StopOutlined, EyeOutlined } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";

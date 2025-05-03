@@ -1,5 +1,9 @@
-import { useMutation, useQueryClient, UseMutationResult } from "@tanstack/react-query";
-import { message } from "antd";
+import {
+  useMutation,
+  useQueryClient,
+  UseMutationResult,
+} from "@tanstack/react-query";
+import { message } from "../utils/message";
 
 interface CrudApi<T, C, U> {
   create: (data: C) => Promise<T>;
@@ -24,9 +28,9 @@ interface UseCrudOperationsResult<T, C, U> {
 
 /**
  * 通用CRUD操作Hook
- * 
+ *
  * 封装了创建、更新、删除等常用操作的逻辑
- * 
+ *
  * @param api CRUD API对象
  * @param queryKey 查询键，用于刷新数据
  * @param messages 操作消息配置
@@ -71,8 +75,7 @@ export function useCrudOperations<T, C, U>(
 
   // 更新实体
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: U }) =>
-      api.update(id, data),
+    mutationFn: ({ id, data }: { id: number; data: U }) => api.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeyArray });
       message.success(finalMessages.updateSuccess);

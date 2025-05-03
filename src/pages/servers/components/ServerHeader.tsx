@@ -33,14 +33,13 @@ const ServerHeader: React.FC<ServerHeaderProps> = ({
   return (
     <PageHeader
       title="服务器管理"
-      leftContent={
-        <AutoRefreshToggle
-          autoRefresh={autoRefresh}
-          onChange={onRefreshChange}
-        />
-      }
       extra={
         <Space>
+          <AutoRefreshToggle
+            autoRefresh={autoRefresh}
+            onChange={onRefreshChange}
+            showLabel={false}
+          />
           <Button
             icon={<SyncOutlined />}
             onClick={onRefresh}

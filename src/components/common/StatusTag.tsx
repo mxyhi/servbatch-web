@@ -16,7 +16,9 @@ interface ServerStatusTagProps {
   status: ServerStatus;
 }
 
-export const ServerStatusTag: React.FC<ServerStatusTagProps> = ({ status }) => {
+const ServerStatusTagComponent: React.FC<ServerStatusTagProps> = ({
+  status,
+}) => {
   const config = STATUS_TAG_CONFIG[status];
 
   let icon = null;
@@ -39,7 +41,7 @@ interface ExecutionStatusTagProps {
   status: ExecutionStatus;
 }
 
-export const ExecutionStatusTag: React.FC<ExecutionStatusTagProps> = ({
+const ExecutionStatusTagComponent: React.FC<ExecutionStatusTagProps> = ({
   status,
 }) => {
   const config = EXECUTION_STATUS_TAG_CONFIG[status];
@@ -47,15 +49,10 @@ export const ExecutionStatusTag: React.FC<ExecutionStatusTagProps> = ({
 };
 
 // 使用React.memo优化渲染
-const MemoizedServerStatusTag = React.memo(ServerStatusTag);
-const MemoizedExecutionStatusTag = React.memo(ExecutionStatusTag);
-
-export {
-  MemoizedServerStatusTag as ServerStatusTag,
-  MemoizedExecutionStatusTag as ExecutionStatusTag,
-};
+export const ServerStatusTag = React.memo(ServerStatusTagComponent);
+export const ExecutionStatusTag = React.memo(ExecutionStatusTagComponent);
 
 export default {
-  ServerStatusTag: MemoizedServerStatusTag,
-  ExecutionStatusTag: MemoizedExecutionStatusTag,
+  ServerStatusTag,
+  ExecutionStatusTag,
 };

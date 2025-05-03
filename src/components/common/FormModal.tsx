@@ -75,6 +75,7 @@ const FormModal: React.FC<FormModalProps> = ({
       footer={footer}
       destroyOnClose
       maskClosable={false}
+      forceRender
       {...restProps}
     >
       <Form form={form} layout={formLayout} preserve={false}>

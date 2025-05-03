@@ -11,7 +11,7 @@ interface EditButtonProps extends Omit<ButtonProps, "onClick"> {
 /**
  * 编辑按钮组件
  */
-export const EditButton: React.FC<EditButtonProps> = ({
+const EditButton: React.FC<EditButtonProps> = ({
   onClick,
   children = "编辑",
   ...buttonProps
@@ -32,7 +32,7 @@ interface TestConnectionButtonProps extends Omit<ButtonProps, "onClick"> {
 /**
  * 测试连接按钮组件
  */
-export const TestConnectionButton: React.FC<TestConnectionButtonProps> = ({
+const TestConnectionButton: React.FC<TestConnectionButtonProps> = ({
   onClick,
   loading = false,
   children = "测试连接",
@@ -59,7 +59,7 @@ interface ActionGroupProps {
 /**
  * 操作按钮组组件
  */
-export const ActionGroup: React.FC<ActionGroupProps> = ({
+const ActionGroup: React.FC<ActionGroupProps> = ({
   children,
   size = "middle",
   className = "",
@@ -76,6 +76,7 @@ const MemoizedEditButton = React.memo(EditButton);
 const MemoizedTestConnectionButton = React.memo(TestConnectionButton);
 const MemoizedActionGroup = React.memo(ActionGroup);
 
+// 命名导出优化后的组件
 export {
   MemoizedEditButton as EditButton,
   MemoizedTestConnectionButton as TestConnectionButton,
@@ -83,9 +84,9 @@ export {
   DeleteConfirmButton,
 };
 
+// 默认导出
 export default {
   EditButton: MemoizedEditButton,
   TestConnectionButton: MemoizedTestConnectionButton,
-  ActionGroup: MemoizedActionGroup,
   DeleteConfirmButton,
 };

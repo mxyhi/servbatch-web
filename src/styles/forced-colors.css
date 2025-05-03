@@ -1,0 +1,60 @@
+/*
+ * 替换 -ms-high-contrast 为标准的 forced-colors
+ * 参考: https://blogs.windows.com/msedgedev/2024/04/29/deprecating-ms-high-contrast/
+ */
+
+/* 替换 @media (-ms-high-contrast: active) {} */
+@media (forced-colors: active) {
+  /* 通用高对比度模式样式 */
+  .ant-btn {
+    forced-color-adjust: auto;
+  }
+
+  .ant-input,
+  .ant-input-password,
+  .ant-select,
+  .ant-select-selector,
+  .ant-modal,
+  .ant-modal-content,
+  .ant-modal-header,
+  .ant-form-item,
+  .ant-form-item-label > label {
+    forced-color-adjust: auto;
+  }
+
+  /* 确保表单控件在高对比度模式下可见 */
+  .ant-input:focus,
+  .ant-input-focused,
+  .ant-input-password:focus,
+  .ant-input-password-focused,
+  .ant-select-focused .ant-select-selector {
+    border-color: ButtonText !important;
+    outline: 2px solid ButtonText !important;
+    outline-offset: 1px !important;
+  }
+}
+
+/* 替换 @media (-ms-high-contrast: black-on-white) {} */
+@media (forced-colors: active) and (prefers-color-scheme: light) {
+  /* 黑底白字高对比度模式样式 */
+  .ant-btn-primary {
+    background-color: ButtonText !important;
+    color: ButtonFace !important;
+    border-color: ButtonText !important;
+  }
+}
+
+/* 替换 @media (-ms-high-contrast: white-on-black) {} */
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  /* 白底黑字高对比度模式样式 */
+  .ant-btn-primary {
+    background-color: ButtonText !important;
+    color: ButtonFace !important;
+    border-color: ButtonText !important;
+  }
+}
+
+/* 替换 -ms-high-contrast-adjust: none; */
+.forced-colors-none {
+  forced-color-adjust: none;
+}

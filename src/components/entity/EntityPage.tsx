@@ -1,8 +1,9 @@
 import React, { ReactNode, useCallback } from "react";
-import { Button, Space, Typography, Switch } from "antd";
+import { Button, Space, Typography } from "antd";
 import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
+import { AutoRefreshToggle } from "../common";
 import { useModalForm } from "../../hooks/useModalForm";
-import { useAutoRefresh } from "../../hooks/useAutoRefresh";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 import EntityTable, { EntityTableProps } from "./EntityTable";
 import EntityModal from "./EntityModal";
 import { EntityFormProps } from "./EntityForm";
@@ -69,6 +70,9 @@ export interface EntityPageProps<
   /** 刷新回调 */
   onRefresh?: () => void;
 
+  /** 自动刷新状态变化回调 */
+  onAutoRefreshChange?: (checked: boolean) => void;
+
   /** 自定义工具栏 */
   toolbar?: ReactNode;
 
@@ -121,6 +125,7 @@ function EntityPage<T extends Record<string, any>, C = any, U = any>({
   onCreateEntity,
   onUpdateEntity,
   onRefresh,
+  onAutoRefreshChange,
   toolbar,
   header,
   footer,
@@ -147,13 +152,27 @@ function EntityPage<T extends Record<string, any>, C = any, U = any>({
   });
 
   // 使用自动刷新Hook
-  const { autoRefresh, setAutoRefresh, refresh, isRefreshing } = useAutoRefresh(
-    {
-      defaultEnabled: defaultAutoRefresh,
-      defaultInterval: refreshInterval,
-      onRefresh,
-      refreshOnMount,
-    }
+  const {
+    autoRefresh,
+    setAutoRefresh: setAutoRefreshInternal,
+    refresh,
+    isRefreshing,
+  } = useAutoRefresh({
+    defaultEnabled: defaultAutoRefresh,
+    defaultInterval: refreshInterval,
+    onRefresh,
+    refreshOnMount,
+  });
+
+  // 自定义setAutoRefresh函数，同时更新内部状态和调用外部回调
+  const setAutoRefresh = useCallback(
+    (value: boolean) => {
+      setAutoRefreshInternal(value);
+      if (onAutoRefreshChange) {
+        onAutoRefreshChange(value);
+      }
+    },
+    [setAutoRefreshInternal, onAutoRefreshChange]
   );
 
   // 处理添加按钮点击
@@ -192,14 +211,12 @@ function EntityPage<T extends Record<string, any>, C = any, U = any>({
         </div>
         <Space>
           {enableAutoRefresh && (
-            <div className="flex items-center mr-2">
-              <span className="mr-2">自动刷新:</span>
-              <Switch
-                checked={autoRefresh}
-                onChange={setAutoRefresh}
-                size="small"
-              />
-            </div>
+            <AutoRefreshToggle
+              autoRefresh={autoRefresh}
+              onChange={setAutoRefresh}
+              showLabel={false}
+              size="small"
+            />
           )}
           {toolbar}
           {showRefreshButton && (
@@ -242,7 +259,8 @@ function EntityPage<T extends Record<string, any>, C = any, U = any>({
         entities={entities}
         isLoading={isLoading}
         isRefreshing={isRefreshing}
-        onRefresh={handleRefresh}
+        // 移除表格中的刷新图标，因为页面顶部已经有刷新按钮
+        onRefresh={undefined}
         {...tableProps}
       />
 

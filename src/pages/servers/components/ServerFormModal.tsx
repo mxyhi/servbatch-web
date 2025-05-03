@@ -5,8 +5,11 @@ import {
   UpdateServerDto,
   CreateServerDto,
 } from "../../../api/servers";
+import { ProxyEntity } from "../../../api/proxies";
 import { UseMutationResult } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { FormModal } from "../../../components/common";
+import { proxiesApi } from "../../../api/proxies";
 
 interface ServerFormModalProps {
   isModalVisible: boolean;
@@ -40,6 +43,17 @@ const ServerFormModal: React.FC<ServerFormModalProps> = ({
   // 使用外部传入的表单实例或创建新的表单实例
   const [internalForm] = Form.useForm();
   const form = externalForm || internalForm;
+
+  // 获取当前连接类型
+  const connectionType = Form.useWatch("connectionType", form) || "direct";
+
+  // 获取代理列表
+  const { data: proxies = [] } = useQuery({
+    queryKey: ["proxies"],
+    queryFn: proxiesApi.getAllProxies,
+    // 只有在代理连接模式下才获取代理列表
+    enabled: connectionType === "proxy" && isModalVisible,
+  });
 
   // 设置默认连接类型和初始化表单
   useEffect(() => {
@@ -126,7 +140,7 @@ const ServerFormModal: React.FC<ServerFormModalProps> = ({
         label="密码"
         extra="如果使用密钥认证，可以留空"
       >
-        <Input.Password />
+        <Input.Password autoComplete="current-password" />
       </Form.Item>
 
       <Form.Item
@@ -142,34 +156,29 @@ const ServerFormModal: React.FC<ServerFormModalProps> = ({
       </Form.Item>
 
       <Form.Item
-        noStyle
-        shouldUpdate={(prevValues, currentValues) =>
-          prevValues.connectionType !== currentValues.connectionType
-        }
+        name="proxyId"
+        label="代理服务器"
+        tooltip="如果选择代理连接，请选择代理服务器"
+        rules={[
+          {
+            validator: (_, value) => {
+              if (connectionType !== "proxy" || value) {
+                return Promise.resolve();
+              }
+              return Promise.reject(new Error("请选择代理服务器"));
+            },
+          },
+        ]}
+        hidden={connectionType !== "proxy"}
       >
-        {({ getFieldValue }) => {
-          const connectionType = getFieldValue("connectionType");
-          return (
-            <Form.Item
-              name="proxyId"
-              label="代理服务器ID"
-              tooltip="如果选择代理连接，请输入代理服务器ID"
-              rules={[
-                {
-                  validator: (_, value) => {
-                    if (connectionType !== "proxy" || value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error("请输入代理服务器ID"));
-                  },
-                },
-              ]}
-              hidden={connectionType !== "proxy"}
-            >
-              <Input placeholder="请输入代理服务器ID" />
-            </Form.Item>
-          );
-        }}
+        <Select placeholder="请选择代理服务器">
+          {proxies.map((proxy: ProxyEntity) => (
+            <Select.Option key={proxy.id} value={proxy.id}>
+              {proxy.name} ({proxy.id})
+              {proxy.status === "online" ? " - 在线" : " - 离线"}
+            </Select.Option>
+          ))}
+        </Select>
       </Form.Item>
       <Form.Item
         name="privateKey"

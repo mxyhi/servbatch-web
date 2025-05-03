@@ -7,11 +7,11 @@ import {
   Form,
   Input,
   InputNumber,
-  message,
   Popconfirm,
   Select,
   Dropdown,
 } from "antd";
+import { message } from "../../utils/message";
 import {
   PlusOutlined,
   EditOutlined,

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Button, Form, Typography, message, Modal } from "antd";
+import { Button, Form, Typography, Modal } from "antd";
+import { message } from "../../utils/message";
 import { PlusOutlined } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -174,13 +175,17 @@ const CommandMonitors: React.FC = () => {
         onCancel={hideModal}
         confirmLoading={createMutation.isPending || updateMutation.isPending}
         width={700}
+        destroyOnClose
+        forceRender={true}
       >
-        <CommandMonitorForm
-          form={form}
-          isEditMode={isEditMode}
-          servers={servers}
-          onSubmit={handleSubmit}
-        />
+        <Form form={form} onFinish={handleSubmit}>
+          <CommandMonitorForm
+            form={form}
+            isEditMode={isEditMode}
+            servers={servers}
+            onSubmit={handleSubmit}
+          />
+        </Form>
       </Modal>
 
       {/* 执行历史抽屉 */}

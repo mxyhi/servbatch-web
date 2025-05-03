@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
-import { Form, FormInstance, message } from "antd";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { Form, FormInstance } from "antd";
+import { message } from "../utils/message";
 
 /**
  * 模态框表单配置选项
@@ -106,9 +107,20 @@ export function useModalForm<
   const [editingEntity, setEditingEntity] = useState<T | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 使用 useRef 跟踪模态框之前的可见状态
+  const prevVisibleRef = useRef<boolean | undefined>(undefined);
+
   // 使用外部表单实例或创建新的
   const [internalForm] = Form.useForm();
   const form = externalForm || internalForm;
+
+  // 更新之前的可见状态
+  useEffect(() => {
+    prevVisibleRef.current = visible;
+  }, [visible]);
+
+  // 注意：我们现在使用 Form.Provider 来解决 useForm 警告问题
+  // 这个 Provider 在 App.tsx 中被添加，包装了整个应用
 
   // 是否处于编辑模式
   const isEditMode = !!editingEntity;

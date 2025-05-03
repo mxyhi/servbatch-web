@@ -8,7 +8,7 @@ import {
 } from "../../../api/servers";
 import { DEFAULT_REFRESH_INTERVAL } from "../../../constants";
 import { useCrudOperations } from "../../../hooks/useCrudOperations";
-import { message } from "antd";
+import { message } from "../../../utils/message";
 
 /**
  * 服务器管理Hook

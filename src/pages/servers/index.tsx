@@ -53,6 +53,11 @@ const Servers: React.FC = () => {
     refresh();
   }, [refetch, refresh]);
 
+  // 处理导入按钮点击
+  const handleImportServers = useCallback(() => {
+    importForm.showModal();
+  }, [importForm]);
+
   return (
     <div className="space-y-4">
       <ServerHeader
@@ -60,7 +65,7 @@ const Servers: React.FC = () => {
         isLoading={isLoading}
         onRefreshChange={setAutoRefresh}
         onAddServer={() => serverForm.showModal()}
-        onImportServers={importForm.showModal}
+        onImportServers={handleImportServers}
         onRefresh={handleManualRefresh}
       />
 

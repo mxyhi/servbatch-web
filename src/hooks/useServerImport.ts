@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { message } from "antd";
+import { message } from "../utils/message";
 import {
   serversApi,
   ImportServersResultDto,
