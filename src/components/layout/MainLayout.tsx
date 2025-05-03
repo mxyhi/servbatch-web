@@ -79,16 +79,21 @@ const MainLayout: React.FC = () => {
       icon: <MonitorOutlined />,
       label: <Link to="/command-monitors">命令监控</Link>,
     },
+    {
+      key: "/users",
+      icon: <UserOutlined />,
+      label: <Link to="/users">用户管理</Link>,
+    },
   ];
 
   return (
-    <Layout className="h-screen overflow-hidden">
+    <Layout className="h-screen">
       <Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
         theme="light"
-        className="shadow-md transition-all duration-300 ease-in-out h-screen"
+        className="shadow-md transition-all duration-300 ease-in-out h-screen overflow-y-auto"
         breakpoint="md"
         width={220}
       >
@@ -115,7 +120,7 @@ const MainLayout: React.FC = () => {
         </div>
       </Sider>
 
-      <Layout className="overflow-auto">
+      <Layout className="flex flex-col overflow-auto h-full">
         <Header
           style={{
             padding: 0,
@@ -167,13 +172,16 @@ const MainLayout: React.FC = () => {
         </Header>
 
         <Content
-          className="m-4 md:m-6"
+          className="m-4 md:m-6 flex-1 flex flex-col"
           style={{
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
+            display: "flex",
+            flexDirection: "column",
+            height: "calc(100% - 2rem)",
           }}
         >
-          <div className="p-4 md:p-6 min-h-[360px]">
+          <div className="p-4 md:p-6 flex-1 flex flex-col h-full">
             <Outlet />
           </div>
         </Content>

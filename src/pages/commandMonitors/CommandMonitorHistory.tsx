@@ -1,6 +1,25 @@
-import React from "react";
-import { Table, Tag, Typography, Drawer } from "antd";
-import { CommandMonitorEntity, CommandMonitorExecutionEntity } from "../../api/commandMonitors";
+import React, { useState } from "react";
+import {
+  Table,
+  Tag,
+  Typography,
+  Drawer,
+  Button,
+  Modal,
+  Form,
+  DatePicker,
+  Space,
+} from "antd";
+import {
+  CommandMonitorEntity,
+  CommandMonitorExecutionEntity,
+  CleanupByDateDto,
+  commandMonitorsApi,
+} from "../../api/commandMonitors";
+import { DeleteOutlined, CalendarOutlined } from "@ant-design/icons";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { message } from "../../utils/message";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
@@ -10,6 +29,7 @@ interface CommandMonitorHistoryProps {
   monitor?: CommandMonitorEntity;
   executions?: CommandMonitorExecutionEntity[];
   isLoading: boolean;
+  onExecutionsChange?: () => void;
 }
 
 /**
@@ -21,7 +41,81 @@ const CommandMonitorHistory: React.FC<CommandMonitorHistoryProps> = ({
   monitor,
   executions = [],
   isLoading,
+  onExecutionsChange,
 }) => {
+  const [cleanupDateModalVisible, setCleanupDateModalVisible] = useState(false);
+  const [dateForm] = Form.useForm();
+  const queryClient = useQueryClient();
+
+  // 清理所有执行历史
+  const cleanupAllMutation = useMutation({
+    mutationFn: (id: number) =>
+      commandMonitorsApi.cleanupExecutionsByMonitorId(id),
+    onSuccess: (result) => {
+      message.success(`成功清理 ${result.deletedCount} 条执行记录`);
+      if (onExecutionsChange) {
+        onExecutionsChange();
+      }
+    },
+    onError: (error) => {
+      message.error(
+        `清理失败: ${error instanceof Error ? error.message : "未知错误"}`
+      );
+    },
+  });
+
+  // 按日期范围清理
+  const cleanupByDateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: CleanupByDateDto }) =>
+      commandMonitorsApi.cleanupExecutionsByDate(id, data),
+    onSuccess: (result) => {
+      message.success(`成功清理 ${result.deletedCount} 条执行记录`);
+      setCleanupDateModalVisible(false);
+      dateForm.resetFields();
+      if (onExecutionsChange) {
+        onExecutionsChange();
+      }
+    },
+    onError: (error) => {
+      message.error(
+        `清理失败: ${error instanceof Error ? error.message : "未知错误"}`
+      );
+    },
+  });
+
+  // 处理清理所有执行历史
+  const handleCleanupAll = () => {
+    if (!monitor) return;
+
+    Modal.confirm({
+      title: "确认清理",
+      content: `确定要清理 "${monitor.name}" 的所有执行历史记录吗？此操作不可恢复。`,
+      onOk: () => {
+        cleanupAllMutation.mutate(monitor.id);
+      },
+      okText: "确定",
+      cancelText: "取消",
+    });
+  };
+
+  // 显示按日期清理模态框
+  const showCleanupDateModal = () => {
+    setCleanupDateModalVisible(true);
+  };
+
+  // 处理按日期清理
+  const handleCleanupByDate = (values: any) => {
+    if (!monitor) return;
+
+    const { dateRange } = values;
+    if (dateRange && dateRange.length === 2) {
+      const cleanupData: CleanupByDateDto = {
+        startDate: dateRange[0].format("YYYY-MM-DD"),
+        endDate: dateRange[1].format("YYYY-MM-DD"),
+      };
+      cleanupByDateMutation.mutate({ id: monitor.id, data: cleanupData });
+    }
+  };
   // 执行历史表格列定义
   const executionColumns = [
     {
@@ -79,7 +173,24 @@ const CommandMonitorHistory: React.FC<CommandMonitorHistoryProps> = ({
       {monitor && (
         <div>
           <div className="mb-4">
-            <Title level={5}>{monitor.name}</Title>
+            <div className="flex justify-between items-center">
+              <Title level={5}>{monitor.name}</Title>
+              <Space>
+                <Button
+                  icon={<CalendarOutlined />}
+                  onClick={showCleanupDateModal}
+                >
+                  按日期清理
+                </Button>
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={handleCleanupAll}
+                >
+                  清理全部
+                </Button>
+              </Space>
+            </div>
             <div className="flex flex-col gap-2 mt-4">
               <Text strong>检查命令:</Text>
               <div className="bg-gray-100 p-2 rounded">
@@ -119,6 +230,43 @@ const CommandMonitorHistory: React.FC<CommandMonitorHistoryProps> = ({
           />
         </div>
       )}
+
+      {/* 按日期范围清理模态框 */}
+      <Modal
+        title="按日期范围清理执行记录"
+        open={cleanupDateModalVisible}
+        onCancel={() => setCleanupDateModalVisible(false)}
+        footer={null}
+      >
+        <Form form={dateForm} onFinish={handleCleanupByDate} layout="vertical">
+          <Form.Item
+            name="dateRange"
+            label="日期范围"
+            rules={[{ required: true, message: "请选择日期范围" }]}
+          >
+            <DatePicker.RangePicker style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item>
+            <div className="flex justify-end">
+              <Button
+                type="default"
+                onClick={() => setCleanupDateModalVisible(false)}
+                className="mr-2"
+              >
+                取消
+              </Button>
+              <Button
+                type="primary"
+                danger
+                htmlType="submit"
+                loading={cleanupByDateMutation.isPending}
+              >
+                清理
+              </Button>
+            </div>
+          </Form.Item>
+        </Form>
+      </Modal>
     </Drawer>
   );
 };

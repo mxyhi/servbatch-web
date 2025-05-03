@@ -1,19 +1,51 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Space, Modal, Tag, Select, Popconfirm } from "antd";
+import {
+  Table,
+  Button,
+  Space,
+  Modal,
+  Tag,
+  Select,
+  Popconfirm,
+  DatePicker,
+  Form,
+  Checkbox,
+  Dropdown,
+  Menu,
+} from "antd";
 import { message } from "../../utils/message";
-import { DeleteOutlined, StopOutlined, EyeOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  StopOutlined,
+  EyeOutlined,
+  ClearOutlined,
+  CalendarOutlined,
+  FilterOutlined,
+  MoreOutlined,
+} from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-import { executionsApi, TaskExecutionEntity } from "../../api/executions";
+import {
+  executionsApi,
+  TaskExecutionEntity,
+  CleanupByDateDto,
+  CleanupByStatusDto,
+} from "../../api/executions";
 import { tasksApi } from "../../api/tasks";
 import { serversApi } from "../../api/servers";
 
 const Executions: React.FC = () => {
   const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [cleanupByDateModalVisible, setCleanupByDateModalVisible] =
+    useState(false);
+  const [cleanupByStatusModalVisible, setCleanupByStatusModalVisible] =
+    useState(false);
   const [selectedExecution, setSelectedExecution] =
     useState<TaskExecutionEntity | null>(null);
   const [filterTaskId, setFilterTaskId] = useState<number | null>(null);
   const [filterServerId, setFilterServerId] = useState<number | null>(null);
+  const [dateForm] = Form.useForm();
+  const [statusForm] = Form.useForm();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
 
@@ -81,6 +113,66 @@ const Executions: React.FC = () => {
     },
   });
 
+  // 根据日期范围清理
+  const cleanupByDateMutation = useMutation({
+    mutationFn: executionsApi.cleanupByDate,
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["executions"] });
+      message.success(`成功清理 ${result.deletedCount} 条执行记录`);
+      setCleanupByDateModalVisible(false);
+      dateForm.resetFields();
+    },
+    onError: (error) => {
+      message.error(
+        `清理失败: ${error instanceof Error ? error.message : "未知错误"}`
+      );
+    },
+  });
+
+  // 根据状态清理
+  const cleanupByStatusMutation = useMutation({
+    mutationFn: executionsApi.cleanupByStatus,
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["executions"] });
+      message.success(`成功清理 ${result.deletedCount} 条执行记录`);
+      setCleanupByStatusModalVisible(false);
+      statusForm.resetFields();
+    },
+    onError: (error) => {
+      message.error(
+        `清理失败: ${error instanceof Error ? error.message : "未知错误"}`
+      );
+    },
+  });
+
+  // 根据任务ID清理
+  const cleanupByTaskIdMutation = useMutation({
+    mutationFn: executionsApi.cleanupByTaskId,
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["executions"] });
+      message.success(`成功清理 ${result.deletedCount} 条执行记录`);
+    },
+    onError: (error) => {
+      message.error(
+        `清理失败: ${error instanceof Error ? error.message : "未知错误"}`
+      );
+    },
+  });
+
+  // 根据服务器ID清理
+  const cleanupByServerIdMutation = useMutation({
+    mutationFn: executionsApi.cleanupByServerId,
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["executions"] });
+      message.success(`成功清理 ${result.deletedCount} 条执行记录`);
+    },
+    onError: (error) => {
+      message.error(
+        `清理失败: ${error instanceof Error ? error.message : "未知错误"}`
+      );
+    },
+  });
+
   const showDetailModal = (execution: TaskExecutionEntity) => {
     setSelectedExecution(execution);
     setDetailModalVisible(true);
@@ -122,6 +214,69 @@ const Executions: React.FC = () => {
   const getServerName = (serverId: number) => {
     const server = servers?.find((s) => s.id === serverId);
     return server ? server.name : `服务器 #${serverId}`;
+  };
+
+  // 显示按日期清理模态框
+  const showCleanupByDateModal = () => {
+    setCleanupByDateModalVisible(true);
+  };
+
+  // 显示按状态清理模态框
+  const showCleanupByStatusModal = () => {
+    setCleanupByStatusModalVisible(true);
+  };
+
+  // 处理按日期清理
+  const handleCleanupByDate = (values: any) => {
+    const { dateRange } = values;
+    if (dateRange && dateRange.length === 2) {
+      const cleanupData: CleanupByDateDto = {
+        startDate: dateRange[0].format("YYYY-MM-DD"),
+        endDate: dateRange[1].format("YYYY-MM-DD"),
+      };
+      cleanupByDateMutation.mutate(cleanupData);
+    }
+  };
+
+  // 处理按状态清理
+  const handleCleanupByStatus = (values: any) => {
+    const { statuses } = values;
+    if (statuses && statuses.length > 0) {
+      const cleanupData: CleanupByStatusDto = {
+        statuses: statuses,
+      };
+      cleanupByStatusMutation.mutate(cleanupData);
+    }
+  };
+
+  // 处理按任务ID清理
+  const handleCleanupByTaskId = (taskId: number) => {
+    Modal.confirm({
+      title: "确认清理",
+      content: `确定要清理任务 "${getTaskName(
+        taskId
+      )}" 的所有执行记录吗？此操作不可恢复。`,
+      onOk: () => {
+        cleanupByTaskIdMutation.mutate(taskId);
+      },
+      okText: "确定",
+      cancelText: "取消",
+    });
+  };
+
+  // 处理按服务器ID清理
+  const handleCleanupByServerId = (serverId: number) => {
+    Modal.confirm({
+      title: "确认清理",
+      content: `确定要清理服务器 "${getServerName(
+        serverId
+      )}" 的所有执行记录吗？此操作不可恢复。`,
+      onOk: () => {
+        cleanupByServerIdMutation.mutate(serverId);
+      },
+      okText: "确定",
+      cancelText: "取消",
+    });
   };
 
   const columns = [
@@ -211,6 +366,44 @@ const Executions: React.FC = () => {
     },
   ];
 
+  // 清理菜单项
+  const cleanupMenuItems = [
+    {
+      key: "byDate",
+      icon: <CalendarOutlined />,
+      label: "按日期范围清理",
+      onClick: showCleanupByDateModal,
+    },
+    {
+      key: "byStatus",
+      icon: <FilterOutlined />,
+      label: "按状态清理",
+      onClick: showCleanupByStatusModal,
+    },
+    ...(filterTaskId
+      ? [
+          {
+            key: "byTask",
+            icon: <DeleteOutlined />,
+            label: "清理当前任务所有记录",
+            danger: true,
+            onClick: () => handleCleanupByTaskId(filterTaskId),
+          },
+        ]
+      : []),
+    ...(filterServerId
+      ? [
+          {
+            key: "byServer",
+            icon: <DeleteOutlined />,
+            label: "清理当前服务器所有记录",
+            danger: true,
+            onClick: () => handleCleanupByServerId(filterServerId),
+          },
+        ]
+      : []),
+  ];
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -245,6 +438,9 @@ const Executions: React.FC = () => {
           {(filterTaskId || filterServerId) && (
             <Button onClick={resetFilters}>重置筛选</Button>
           )}
+          <Dropdown menu={{ items: cleanupMenuItems }}>
+            <Button icon={<ClearOutlined />}>清理记录</Button>
+          </Dropdown>
         </div>
       </div>
 
@@ -314,6 +510,90 @@ const Executions: React.FC = () => {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* 按日期范围清理模态框 */}
+      <Modal
+        title="按日期范围清理执行记录"
+        open={cleanupByDateModalVisible}
+        onCancel={() => setCleanupByDateModalVisible(false)}
+        footer={null}
+      >
+        <Form form={dateForm} onFinish={handleCleanupByDate} layout="vertical">
+          <Form.Item
+            name="dateRange"
+            label="日期范围"
+            rules={[{ required: true, message: "请选择日期范围" }]}
+          >
+            <DatePicker.RangePicker style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item>
+            <div className="flex justify-end">
+              <Button
+                type="default"
+                onClick={() => setCleanupByDateModalVisible(false)}
+                className="mr-2"
+              >
+                取消
+              </Button>
+              <Button
+                type="primary"
+                danger
+                htmlType="submit"
+                loading={cleanupByDateMutation.isPending}
+              >
+                清理
+              </Button>
+            </div>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 按状态清理模态框 */}
+      <Modal
+        title="按状态清理执行记录"
+        open={cleanupByStatusModalVisible}
+        onCancel={() => setCleanupByStatusModalVisible(false)}
+        footer={null}
+      >
+        <Form
+          form={statusForm}
+          onFinish={handleCleanupByStatus}
+          layout="vertical"
+        >
+          <Form.Item
+            name="statuses"
+            label="状态"
+            rules={[{ required: true, message: "请选择至少一个状态" }]}
+          >
+            <Checkbox.Group className="flex flex-col gap-2">
+              <Checkbox value="completed">已完成</Checkbox>
+              <Checkbox value="failed">失败</Checkbox>
+              <Checkbox value="cancelled">已取消</Checkbox>
+              <Checkbox value="queued">队列中</Checkbox>
+              <Checkbox value="running">运行中</Checkbox>
+            </Checkbox.Group>
+          </Form.Item>
+          <Form.Item>
+            <div className="flex justify-end">
+              <Button
+                type="default"
+                onClick={() => setCleanupByStatusModalVisible(false)}
+                className="mr-2"
+              >
+                取消
+              </Button>
+              <Button
+                type="primary"
+                danger
+                htmlType="submit"
+                loading={cleanupByStatusMutation.isPending}
+              >
+                清理
+              </Button>
+            </div>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

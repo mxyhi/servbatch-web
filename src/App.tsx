@@ -20,6 +20,7 @@ import Tasks from "./pages/tasks";
 import Executions from "./pages/executions";
 import CommandMonitors from "./pages/commandMonitors";
 import Proxies from "./pages/proxies";
+import Users from "./pages/users";
 import Login from "./pages/login";
 
 // 自定义主题配置
@@ -82,6 +83,7 @@ function App() {
                         element={<CommandMonitors />}
                       />
                       <Route path="proxies" element={<Proxies />} />
+                      <Route path="users" element={<Users />} />
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </Route>
                   </Route>

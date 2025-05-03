@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from "react";
-import { Card, Row, Col, Statistic, Table, Tag, Spin, Typography } from "antd";
+import { Card, Row, Col, Statistic, Spin, Typography } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import { dashboardApi } from "../../api/dashboard";
-import { TaskExecutionEntity } from "../../api/executions";
 import * as echarts from "echarts";
 import {
   ArrowUpOutlined,
@@ -19,11 +18,6 @@ const Dashboard: React.FC = () => {
   const { data: summary, isLoading: summaryLoading } = useQuery({
     queryKey: ["dashboard", "summary"],
     queryFn: dashboardApi.getSummary,
-  });
-
-  const { data: recentExecutions, isLoading: executionsLoading } = useQuery({
-    queryKey: ["dashboard", "recentExecutions"],
-    queryFn: () => dashboardApi.getRecentExecutions(10),
   });
 
   const { data: serverStatus, isLoading: serverStatusLoading } = useQuery({
@@ -206,58 +200,14 @@ const Dashboard: React.FC = () => {
     }
   }, [serverStatus]);
 
-  const columns = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "任务ID",
-      dataIndex: "taskId",
-      key: "taskId",
-    },
-    {
-      title: "服务器ID",
-      dataIndex: "serverId",
-      key: "serverId",
-    },
-    {
-      title: "状态",
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => {
-        let color = "default";
-        if (status === "completed") color = "success";
-        if (status === "failed") color = "error";
-        if (status === "running") color = "processing";
-        if (status === "queued") color = "warning";
-        if (status === "cancelled") color = "default";
-
-        return <Tag color={color}>{status}</Tag>;
-      },
-    },
-    {
-      title: "创建时间",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date: string) => new Date(date).toLocaleString(),
-    },
-  ];
-
-  if (
-    summaryLoading ||
-    executionsLoading ||
-    serverStatusLoading ||
-    taskStatsLoading
-  ) {
+  if (summaryLoading || serverStatusLoading || taskStatsLoading) {
     return (
       <Spin size="large" className="flex justify-center items-center h-full" />
     );
   }
 
   return (
-    <div>
+    <div className="flex flex-col h-full" style={{ height: "100%" }}>
       <Typography.Title level={2} className="mb-6">
         系统仪表盘
       </Typography.Title>
@@ -314,7 +264,7 @@ const Dashboard: React.FC = () => {
         <Col xs={24} lg={12}>
           <Card
             title="任务执行统计"
-            className="shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer"
+            className="shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer h-full"
           >
             <div ref={chartRef} className="w-full h-[300px]" />
           </Card>
@@ -322,26 +272,12 @@ const Dashboard: React.FC = () => {
         <Col xs={24} lg={12}>
           <Card
             title="服务器状态"
-            className="shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer"
+            className="shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer h-full"
           >
             <div ref={serverStatusChartRef} className="w-full h-[300px]" />
           </Card>
         </Col>
       </Row>
-
-      <Card
-        title="最近执行记录"
-        className="mt-6 shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer"
-      >
-        <Table
-          dataSource={recentExecutions}
-          columns={columns}
-          rowKey="id"
-          pagination={false}
-          className="overflow-x-auto"
-          scroll={{ x: "max-content" }}
-        />
-      </Card>
     </div>
   );
 };

@@ -195,6 +195,11 @@ const CommandMonitors: React.FC = () => {
         monitor={getCurrentMonitor()}
         executions={monitorExecutions}
         isLoading={executionsLoading}
+        onExecutionsChange={() => {
+          queryClient.invalidateQueries({
+            queryKey: ["commandMonitorExecutions", selectedMonitorId],
+          });
+        }}
       />
     </div>
   );
