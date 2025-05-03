@@ -3,9 +3,22 @@ import { Form, FormInstance } from "antd";
 import { message } from "../utils/message";
 
 /**
+ * 实体到表单值的转换函数类型
+ */
+export type EntityToFormValues<T, V> = (entity: T) => V;
+
+/**
+ * 表单值到实体的转换函数类型
+ */
+export type FormValuesToEntity<T, V> = (values: V) => Partial<T>;
+
+/**
  * 模态框表单配置选项
  */
-export interface UseModalFormOptions<T, V = Record<string, unknown>> {
+export interface UseModalFormOptions<
+  T extends Record<string, any>,
+  V extends Record<string, any>
+> {
   /** 表单初始值 */
   initialValues?: Partial<V>;
 
@@ -29,12 +42,21 @@ export interface UseModalFormOptions<T, V = Record<string, unknown>> {
 
   /** 自定义表单验证函数 */
   validate?: (values: V) => boolean | string | Promise<boolean | string>;
+
+  /** 实体到表单值的转换函数 */
+  entityToFormValues?: EntityToFormValues<T, V>;
+
+  /** 表单值到实体的转换函数 */
+  formValuesToEntity?: FormValuesToEntity<T, V>;
 }
 
 /**
  * 模态框表单返回值
  */
-export interface UseModalFormResult<T, V = Record<string, unknown>> {
+export interface UseModalFormResult<
+  T extends Record<string, any>,
+  V extends Record<string, any>
+> {
   /** 模态框可见状态 */
   visible: boolean;
 
@@ -79,7 +101,7 @@ export interface UseModalFormResult<T, V = Record<string, unknown>> {
  *   showModal,
  *   hideModal,
  *   submitForm,
- * } = useModalForm({
+ * } = useModalForm<UserEntity, UserFormValues>({
  *   initialValues: { status: 'active' },
  *   onSuccess: (values, entity) => {
  *     if (entity) {
@@ -87,12 +109,18 @@ export interface UseModalFormResult<T, V = Record<string, unknown>> {
  *     } else {
  *       createUser(values);
  *     }
- *   }
+ *   },
+ *   // 可选：自定义实体到表单值的转换
+ *   entityToFormValues: (entity) => ({
+ *     name: entity.name,
+ *     email: entity.email,
+ *     status: entity.status
+ *   })
  * });
  */
 export function useModalForm<
-  T extends Record<string, unknown> = Record<string, unknown>,
-  V = Record<string, unknown>
+  T extends Record<string, any>,
+  V extends Record<string, any> = T
 >({
   initialValues,
   form: externalForm,
@@ -102,7 +130,24 @@ export function useModalForm<
   onError,
   onClose,
   validate,
-}: UseModalFormOptions<T, V> = {}): UseModalFormResult<T, V> {
+  entityToFormValues,
+  formValuesToEntity, // 保留参数以便未来扩展
+  ...rest // 添加 rest 参数以支持额外的初始值
+}: UseModalFormOptions<T, V> & Record<string, any> = {}): UseModalFormResult<
+  T,
+  V
+> {
+  // 忽略额外的参数，这些可能是传递给表单的初始值
+  // 例如 useModalForm<ServerEntity>({ connectionType: "direct", port: 22 })
+  // 这里的 connectionType 和 port 会被当作初始值的一部分
+
+  // 合并额外的初始值
+  const mergedInitialValues = initialValues
+    ? { ...rest, ...initialValues }
+    : Object.keys(rest).length > 0
+    ? rest
+    : undefined;
+
   // 模态框状态
   const [visible, setVisible] = useState(false);
   const [editingEntity, setEditingEntity] = useState<T | null>(null);
@@ -126,6 +171,30 @@ export function useModalForm<
   // 是否处于编辑模式
   const isEditMode = !!editingEntity;
 
+  // 将实体转换为表单值
+  const convertEntityToFormValues = useCallback(
+    (entity: T): V => {
+      if (entityToFormValues) {
+        return entityToFormValues(entity);
+      }
+      // 默认转换：直接使用实体作为表单值（假设结构兼容）
+      return entity as unknown as V;
+    },
+    [entityToFormValues]
+  );
+
+  // 将表单值转换为实体（用于创建新实体）
+  const convertFormValuesToEntity = useCallback(
+    (values: V): Partial<T> => {
+      if (formValuesToEntity) {
+        return formValuesToEntity(values);
+      }
+      // 默认转换：直接使用表单值作为实体（假设结构兼容）
+      return values as unknown as Partial<T>;
+    },
+    [formValuesToEntity]
+  );
+
   // 显示模态框
   const showModal = useCallback(
     (entity?: T) => {
@@ -137,15 +206,16 @@ export function useModalForm<
 
       // 设置表单值
       if (entity) {
-        form.setFieldsValue(entity as unknown as V);
-      } else if (initialValues) {
-        form.setFieldsValue(initialValues as V);
+        const formValues = convertEntityToFormValues(entity);
+        form.setFieldsValue(formValues);
+      } else if (mergedInitialValues) {
+        form.setFieldsValue(mergedInitialValues as Partial<V>);
       }
 
       // 显示模态框
       setVisible(true);
     },
-    [form, initialValues]
+    [form, mergedInitialValues, convertEntityToFormValues]
   );
 
   // 隐藏模态框
@@ -171,15 +241,16 @@ export function useModalForm<
     form.resetFields();
 
     // 如果有初始值，设置初始值
-    if (initialValues) {
-      form.setFieldsValue(initialValues as V);
+    if (mergedInitialValues) {
+      form.setFieldsValue(mergedInitialValues as Partial<V>);
     }
 
     // 如果有编辑实体，设置编辑实体的值
     if (editingEntity) {
-      form.setFieldsValue(editingEntity as unknown as V);
+      const formValues = convertEntityToFormValues(editingEntity);
+      form.setFieldsValue(formValues);
     }
-  }, [form, initialValues, editingEntity]);
+  }, [form, mergedInitialValues, editingEntity, convertEntityToFormValues]);
 
   // 提交表单
   const submitForm = useCallback(async () => {
@@ -199,6 +270,10 @@ export function useModalForm<
           return;
         }
       }
+
+      // 转换表单值为实体（仅用于日志和调试，实际转换由调用者处理）
+      // 这里不使用转换结果，但保留转换逻辑以便未来扩展
+      convertFormValuesToEntity(values);
 
       // 调用成功回调
       if (onSuccess) {
@@ -228,14 +303,16 @@ export function useModalForm<
     closeOnSuccess,
     hideModal,
     onError,
+    convertFormValuesToEntity,
   ]);
 
   // 当编辑实体变化时，更新表单值
   useEffect(() => {
     if (editingEntity && visible) {
-      form.setFieldsValue(editingEntity as unknown as V);
+      const formValues = convertEntityToFormValues(editingEntity);
+      form.setFieldsValue(formValues);
     }
-  }, [editingEntity, form, visible]);
+  }, [editingEntity, form, visible, convertEntityToFormValues]);
 
   return {
     visible,
