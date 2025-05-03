@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { ServerEntity } from "../../api/servers";
-import { useServers } from "./hooks/useServers";
+import { useServersPaginated } from "./hooks/useServersPaginated";
 import ServerFormModal from "./components/ServerFormModal";
 import ImportServersModal from "./components/ImportServersModal";
 import ServerHeader from "./components/ServerHeader";
@@ -12,6 +12,7 @@ import useAutoRefresh from "../../hooks/useAutoRefresh";
  * 服务器管理页面
  *
  * 展示服务器列表，提供添加、编辑、删除、测试连接等功能
+ * 支持分页功能
  */
 const Servers: React.FC = () => {
   // 使用自定义Hook管理服务器表单模态框
@@ -35,7 +36,7 @@ const Servers: React.FC = () => {
     refreshOnMount: true,
   });
 
-  // 获取服务器数据和操作
+  // 获取服务器数据和操作（使用分页版本）
   const {
     servers,
     isLoading,
@@ -45,7 +46,9 @@ const Servers: React.FC = () => {
     deleteMutation,
     testConnectionMutation,
     importServersMutation,
-  } = useServers(autoRefresh, 5000, false); // 禁用自动测试连接
+    pagination,
+    handleTableChange,
+  } = useServersPaginated(autoRefresh, 5000, false); // 禁用自动测试连接
 
   // 手动刷新处理函数
   const handleManualRefresh = useCallback(() => {
@@ -76,6 +79,10 @@ const Servers: React.FC = () => {
         onDelete={deleteMutation.mutate}
         onTestConnection={testConnectionMutation.mutate}
         testConnectionMutation={testConnectionMutation}
+        tableProps={{
+          pagination,
+          onChange: handleTableChange,
+        }}
       />
 
       <ServerFormModal

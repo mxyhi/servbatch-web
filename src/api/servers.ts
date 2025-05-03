@@ -1,4 +1,5 @@
 import api from "./axios";
+import { DEFAULT_PAGE_SIZE } from "../constants";
 
 export interface CreateServerDto {
   name: string;
@@ -53,11 +54,51 @@ export interface ImportServersResultDto {
   failureServers: ImportFailureServerDto[];
 }
 
+// 分页参数接口
+export interface PaginationParams {
+  page?: number;
+  pageSize?: number;
+}
+
+// 分页结果接口
+export interface PaginationResultDto<T> {
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  items: T[];
+}
+
+// 服务器分页结果接口
+export interface ServerPaginationResult
+  extends PaginationResultDto<ServerEntity> {}
+
 export const serversApi = {
-  // 获取所有服务器
-  getAllServers: async (): Promise<ServerEntity[]> => {
-    const response = await api.get("/servers");
+  // 获取服务器列表（分页）
+  getServersPaginated: async (
+    params: PaginationParams = {}
+  ): Promise<ServerPaginationResult> => {
+    const { page = 1, pageSize = DEFAULT_PAGE_SIZE } = params;
+    const response = await api.get("/servers", {
+      params: { page, pageSize },
+    });
     return response.data;
+  },
+
+  // 获取所有服务器（兼容旧版本，内部使用分页API）
+  getAllServers: async (): Promise<ServerEntity[]> => {
+    try {
+      // 尝试使用分页API获取所有数据
+      const response = await serversApi.getServersPaginated({
+        page: 1,
+        pageSize: 1000, // 使用较大的页面大小，假设不会超过1000个服务器
+      });
+      return response.items;
+    } catch (error) {
+      // 如果分页API失败，回退到旧版API
+      const response = await api.get("/servers");
+      return response.data;
+    }
   },
 
   // 获取单个服务器
