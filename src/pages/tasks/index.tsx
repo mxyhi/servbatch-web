@@ -366,7 +366,10 @@ const Tasks: React.FC = () => {
         footer={null}
       >
         <Form form={executeForm} onFinish={handleExecute} layout="vertical">
-          <div style={{ marginBottom: 16 }}>
+          <div
+            style={{ marginBottom: 16 }}
+            className="flex justify-between items-center"
+          >
             <Checkbox
               indeterminate={indeterminate}
               onChange={onCheckAllChange}
@@ -375,6 +378,14 @@ const Tasks: React.FC = () => {
             >
               全选
             </Checkbox>
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => onCheckAllChange({ target: { checked: true } })}
+              disabled={!servers || servers.length === 0}
+            >
+              选择所有服务器
+            </Button>
           </div>
           <Form.Item
             name="serverIds"

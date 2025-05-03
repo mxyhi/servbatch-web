@@ -172,16 +172,13 @@ const MainLayout: React.FC = () => {
         </Header>
 
         <Content
-          className="m-4 md:m-6 flex-1 flex flex-col"
+          className="m-4 md:m-6 flex-1 flex flex-col overflow-auto"
           style={{
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
-            display: "flex",
-            flexDirection: "column",
-            height: "calc(100% - 2rem)",
           }}
         >
-          <div className="p-4 md:p-6 flex-1 flex flex-col h-full">
+          <div className="p-4 md:p-6 flex-1 flex flex-col">
             <Outlet />
           </div>
         </Content>

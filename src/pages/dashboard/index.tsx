@@ -9,15 +9,17 @@ import {
   ClockCircleOutlined,
   CloudServerOutlined,
   CodeOutlined,
+  ApiOutlined,
 } from "@ant-design/icons";
 
 const Dashboard: React.FC = () => {
   const chartRef = useRef<HTMLDivElement>(null);
   const serverStatusChartRef = useRef<HTMLDivElement>(null);
+  const proxyStatusChartRef = useRef<HTMLDivElement>(null);
 
   const { data: summary, isLoading: summaryLoading } = useQuery({
     queryKey: ["dashboard", "summary"],
-    queryFn: dashboardApi.getSummary,
+    queryFn: dashboardApi.getSummaryWithProxies, // 使用包含代理信息的摘要API
   });
 
   const { data: serverStatus, isLoading: serverStatusLoading } = useQuery({
@@ -30,13 +32,23 @@ const Dashboard: React.FC = () => {
     queryFn: dashboardApi.getTaskStats,
   });
 
+  const { data: proxyStatus, isLoading: proxyStatusLoading } = useQuery({
+    queryKey: ["dashboard", "proxyStatus"],
+    queryFn: dashboardApi.getProxyStatus,
+  });
+
   // 处理窗口大小变化，重新调整图表大小
   useEffect(() => {
     const handleResize = () => {
-      if (chartRef.current && serverStatusChartRef.current) {
+      if (
+        chartRef.current &&
+        serverStatusChartRef.current &&
+        proxyStatusChartRef.current
+      ) {
         const charts = [
           echarts.getInstanceByDom(chartRef.current),
           echarts.getInstanceByDom(serverStatusChartRef.current),
+          echarts.getInstanceByDom(proxyStatusChartRef.current),
         ];
 
         charts.forEach((chart) => {
@@ -200,7 +212,89 @@ const Dashboard: React.FC = () => {
     }
   }, [serverStatus]);
 
-  if (summaryLoading || serverStatusLoading || taskStatsLoading) {
+  // 初始化代理状态图表
+  useEffect(() => {
+    if (proxyStatus && proxyStatusChartRef.current) {
+      const chart = echarts.init(proxyStatusChartRef.current);
+
+      const onlineCount = proxyStatus.filter(
+        (proxy) => proxy.status === "online"
+      ).length;
+      const offlineCount = proxyStatus.filter(
+        (proxy) => proxy.status === "offline"
+      ).length;
+
+      const option = {
+        title: {
+          text: "代理状态",
+          left: "center",
+          textStyle: {
+            fontSize: 16,
+            fontWeight: "normal",
+          },
+        },
+        tooltip: {
+          trigger: "item",
+          formatter: "{a} <br/>{b}: {c} ({d}%)",
+        },
+        legend: {
+          orient: "horizontal",
+          bottom: "bottom",
+          icon: "circle",
+          itemWidth: 10,
+          itemHeight: 10,
+          textStyle: {
+            fontSize: 12,
+          },
+        },
+        color: ["#52c41a", "#ff4d4f"],
+        series: [
+          {
+            name: "代理状态",
+            type: "pie",
+            radius: ["40%", "70%"],
+            avoidLabelOverlap: false,
+            itemStyle: {
+              borderRadius: 6,
+              borderColor: "#fff",
+              borderWidth: 2,
+            },
+            label: {
+              show: false,
+              position: "center",
+            },
+            emphasis: {
+              label: {
+                show: true,
+                fontSize: 16,
+                fontWeight: "bold",
+              },
+            },
+            labelLine: {
+              show: false,
+            },
+            data: [
+              { value: onlineCount, name: "在线" },
+              { value: offlineCount, name: "离线" },
+            ],
+          },
+        ],
+      };
+
+      chart.setOption(option);
+
+      return () => {
+        chart.dispose();
+      };
+    }
+  }, [proxyStatus]);
+
+  if (
+    summaryLoading ||
+    serverStatusLoading ||
+    taskStatsLoading ||
+    proxyStatusLoading
+  ) {
     return (
       <Spin size="large" className="flex justify-center items-center h-full" />
     );
@@ -213,7 +307,7 @@ const Dashboard: React.FC = () => {
       </Typography.Title>
 
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} md={12} lg={6}>
+        <Col xs={24} sm={12} md={12} lg={4}>
           <Card className="shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer">
             <Statistic
               title="服务器总数"
@@ -223,7 +317,7 @@ const Dashboard: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={12} lg={6}>
+        <Col xs={24} sm={12} md={12} lg={4}>
           <Card className="shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer">
             <Statistic
               title="在线服务器"
@@ -233,7 +327,27 @@ const Dashboard: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={12} lg={6}>
+        <Col xs={24} sm={12} md={12} lg={4}>
+          <Card className="shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer">
+            <Statistic
+              title="代理总数"
+              value={summary?.totalProxies || 0}
+              prefix={<ApiOutlined className="text-primary mr-1" />}
+              valueStyle={{ color: "#1677ff" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={12} lg={4}>
+          <Card className="shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer">
+            <Statistic
+              title="在线代理"
+              value={summary?.onlineProxies || 0}
+              prefix={<CheckCircleOutlined className="text-success mr-1" />}
+              valueStyle={{ color: "#52c41a" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={12} lg={4}>
           <Card className="shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer">
             <Statistic
               title="任务总数"
@@ -243,7 +357,7 @@ const Dashboard: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={12} lg={6}>
+        <Col xs={24} sm={12} md={12} lg={4}>
           <Card className="shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer">
             <Statistic
               title="今日执行次数"
@@ -261,7 +375,7 @@ const Dashboard: React.FC = () => {
       </Row>
 
       <Row gutter={[16, 16]} className="mt-6">
-        <Col xs={24} lg={12}>
+        <Col xs={24} lg={8}>
           <Card
             title="任务执行统计"
             className="shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer h-full"
@@ -269,12 +383,20 @@ const Dashboard: React.FC = () => {
             <div ref={chartRef} className="w-full h-[300px]" />
           </Card>
         </Col>
-        <Col xs={24} lg={12}>
+        <Col xs={24} lg={8}>
           <Card
             title="服务器状态"
             className="shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer h-full"
           >
             <div ref={serverStatusChartRef} className="w-full h-[300px]" />
+          </Card>
+        </Col>
+        <Col xs={24} lg={8}>
+          <Card
+            title="代理状态"
+            className="shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer h-full"
+          >
+            <div ref={proxyStatusChartRef} className="w-full h-[300px]" />
           </Card>
         </Col>
       </Row>
