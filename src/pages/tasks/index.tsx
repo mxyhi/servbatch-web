@@ -10,6 +10,7 @@ import {
   Popconfirm,
   Select,
   Dropdown,
+  Checkbox,
 } from "antd";
 import { message } from "../../utils/message";
 import {
@@ -40,6 +41,8 @@ const Tasks: React.FC = () => {
   const [isExecuteModalVisible, setIsExecuteModalVisible] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const [editingTask, setEditingTask] = useState<TaskEntity | null>(null);
+  const [checkAll, setCheckAll] = useState(false);
+  const [indeterminate, setIndeterminate] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -112,6 +115,8 @@ const Tasks: React.FC = () => {
       setIsExecuteModalVisible(false);
       setSelectedTaskId(null);
       executeForm.resetFields();
+      setCheckAll(false);
+      setIndeterminate(false);
     },
     onError: (error) => {
       message.error(
@@ -139,6 +144,8 @@ const Tasks: React.FC = () => {
   const showExecuteModal = (taskId: number) => {
     setSelectedTaskId(taskId);
     executeForm.resetFields();
+    setCheckAll(false);
+    setIndeterminate(false);
     setIsExecuteModalVisible(true);
   };
 
@@ -152,6 +159,8 @@ const Tasks: React.FC = () => {
     setIsExecuteModalVisible(false);
     setSelectedTaskId(null);
     executeForm.resetFields();
+    setCheckAll(false);
+    setIndeterminate(false);
   };
 
   const handleSubmit = () => {
@@ -179,6 +188,35 @@ const Tasks: React.FC = () => {
 
   const handleViewHistory = (taskId: number) => {
     navigate(`/executions?taskId=${taskId}`);
+  };
+
+  // 处理全选复选框变化
+  const onCheckAllChange = (e: any) => {
+    const checked = e.target.checked;
+    setCheckAll(checked);
+    setIndeterminate(false);
+
+    // 如果选中，则选择所有服务器；否则清空选择
+    if (checked && servers?.length) {
+      const allServerIds = servers.map((server) => server.id);
+      executeForm.setFieldsValue({ serverIds: allServerIds });
+    } else {
+      executeForm.setFieldsValue({ serverIds: [] });
+    }
+  };
+
+  // 处理服务器选择变化
+  const handleServerSelectChange = (selectedServerIds: number[]) => {
+    // 如果服务器列表为空，则不处理
+    if (!servers || servers.length === 0) {
+      return;
+    }
+
+    // 根据选中的服务器数量更新全选状态
+    setIndeterminate(
+      selectedServerIds.length > 0 && selectedServerIds.length < servers.length
+    );
+    setCheckAll(selectedServerIds.length === servers.length);
   };
 
   const columns = [
@@ -328,6 +366,16 @@ const Tasks: React.FC = () => {
         footer={null}
       >
         <Form form={executeForm} onFinish={handleExecute} layout="vertical">
+          <div style={{ marginBottom: 16 }}>
+            <Checkbox
+              indeterminate={indeterminate}
+              onChange={onCheckAllChange}
+              checked={checkAll}
+              disabled={!servers || servers.length === 0}
+            >
+              全选
+            </Checkbox>
+          </div>
           <Form.Item
             name="serverIds"
             label="选择服务器"
@@ -337,6 +385,7 @@ const Tasks: React.FC = () => {
               mode="multiple"
               placeholder="选择要执行任务的服务器"
               style={{ width: "100%" }}
+              onChange={handleServerSelectChange}
             >
               {servers?.map((server) => (
                 <Select.Option key={server.id} value={server.id}>
