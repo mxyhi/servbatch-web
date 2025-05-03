@@ -1,54 +1,13 @@
-import React, { ReactNode, useCallback, useEffect } from "react";
-import { Form, FormInstance, FormProps, Button, Space } from "antd";
+import React, { ReactNode, useCallback } from "react";
+import { Form, FormInstance, FormProps } from "antd";
 import { FormLayout } from "antd/es/form/Form";
-
-/**
- * 表单项配置
- */
-export interface EntityFormItem {
-  /** 表单项名称 */
-  name: string;
-
-  /** 表单项标签 */
-  label?: ReactNode;
-
-  /** 表单项组件 */
-  component: ReactNode;
-
-  /** 表单项规则 */
-  rules?: any[];
-
-  /** 表单项提示 */
-  tooltip?: ReactNode;
-
-  /** 表单项额外信息 */
-  extra?: ReactNode;
-
-  /** 表单项是否禁用 */
-  disabled?: boolean;
-
-  /** 表单项是否隐藏 */
-  hidden?: boolean;
-
-  /** 表单项依赖字段 */
-  dependencies?: string[];
-
-  /** 表单项是否只在编辑模式显示 */
-  editOnly?: boolean;
-
-  /** 表单项是否只在创建模式显示 */
-  createOnly?: boolean;
-
-  /** 表单项栅格配置 */
-  colSpan?: number;
-
-  /** 表单项自定义渲染函数 */
-  render?: (
-    item: EntityFormItem,
-    form: FormInstance,
-    isEditMode: boolean
-  ) => ReactNode;
-}
+import { FormItem, FormFooter } from "./form";
+import {
+  FormItem as FormItemType,
+  FormSubmitCallback,
+  FormValuesChangeCallback,
+  FormFieldsChangeCallback,
+} from "../../types/form";
 
 /**
  * 实体表单属性
@@ -58,7 +17,7 @@ export interface EntityFormProps extends Omit<FormProps, "form"> {
   form: FormInstance;
 
   /** 表单项配置 */
-  items?: EntityFormItem[];
+  items?: FormItemType[];
 
   /** 表单布局 */
   layout?: FormLayout;
@@ -91,7 +50,7 @@ export interface EntityFormProps extends Omit<FormProps, "form"> {
   footer?: ReactNode;
 
   /** 表单提交回调 */
-  onSubmit?: (values: any) => void;
+  onSubmit?: FormSubmitCallback;
 
   /** 表单重置回调 */
   onReset?: () => void;
@@ -100,10 +59,10 @@ export interface EntityFormProps extends Omit<FormProps, "form"> {
   onCancel?: () => void;
 
   /** 表单值变化回调 */
-  onValuesChange?: (changedValues: any, allValues: any) => void;
+  onValuesChange?: FormValuesChangeCallback;
 
   /** 表单字段变化回调 */
-  onFieldsChange?: (changedFields: any[], allFields: any[]) => void;
+  onFieldsChange?: FormFieldsChangeCallback;
 
   /** 自定义表单内容 */
   children?: ReactNode;
@@ -169,7 +128,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
 }) => {
   // 处理表单提交
   const handleFinish = useCallback(
-    (values: any) => {
+    (values: Record<string, unknown>) => {
       if (onSubmit) {
         onSubmit(values);
       }
@@ -192,91 +151,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
     }
   }, [onCancel]);
 
-  // 渲染表单项
-  const renderFormItems = useCallback(() => {
-    return items
-      .filter((item) => {
-        // 过滤隐藏的表单项
-        if (item.hidden) return false;
-
-        // 过滤只在特定模式显示的表单项
-        if (item.editOnly && !isEditMode) return false;
-        if (item.createOnly && isEditMode) return false;
-
-        return true;
-      })
-      .map((item, index) => {
-        // 如果有自定义渲染函数，使用自定义渲染
-        if (item.render) {
-          return (
-            <React.Fragment key={`form-item-${item.name}-${index}`}>
-              {item.render(item, form, isEditMode)}
-            </React.Fragment>
-          );
-        }
-
-        // 默认渲染
-        return (
-          <div
-            key={`form-item-${item.name}-${index}`}
-            className={`col-span-${item.colSpan || 1}`}
-          >
-            <Form.Item
-              name={item.name}
-              label={item.label}
-              rules={item.rules}
-              tooltip={item.tooltip}
-              extra={item.extra}
-              dependencies={item.dependencies}
-              hidden={item.hidden}
-            >
-              {item.component}
-            </Form.Item>
-          </div>
-        );
-      });
-  }, [items, isEditMode, form]);
-
-  // 渲染表单底部
-  const renderFooter = useCallback(() => {
-    if (footer) {
-      return footer;
-    }
-
-    if (!showSubmitButton && !showResetButton && !showCancelButton) {
-      return null;
-    }
-
-    return (
-      <Form.Item className="mb-0 mt-4">
-        <Space>
-          {showSubmitButton && (
-            <Button type="primary" htmlType="submit" loading={submitLoading}>
-              {submitText}
-            </Button>
-          )}
-          {showResetButton && (
-            <Button onClick={handleReset}>{resetText}</Button>
-          )}
-          {showCancelButton && (
-            <Button onClick={handleCancel}>{cancelText}</Button>
-          )}
-        </Space>
-      </Form.Item>
-    );
-  }, [
-    footer,
-    showSubmitButton,
-    showResetButton,
-    showCancelButton,
-    submitText,
-    resetText,
-    cancelText,
-    submitLoading,
-    handleReset,
-    handleCancel,
-  ]);
-
   // 表单布局样式
   const formLayoutClass = React.useMemo(() => {
     if (columns <= 1) return "";
@@ -292,9 +166,41 @@ const EntityForm: React.FC<EntityFormProps> = ({
       onFieldsChange={onFieldsChange}
       {...restProps}
     >
-      <div className={formLayoutClass}>{renderFormItems()}</div>
+      <div className={formLayoutClass}>
+        {items
+          .filter((item) => {
+            // 过滤隐藏的表单项
+            if (item.hidden) return false;
+            // 过滤只在特定模式显示的表单项
+            if (item.editOnly && !isEditMode) return false;
+            if (item.createOnly && isEditMode) return false;
+            return true;
+          })
+          .map((item, index) => (
+            <FormItem
+              key={`form-item-${item.name}-${index}`}
+              item={item}
+              form={form}
+              isEditMode={isEditMode}
+            />
+          ))}
+      </div>
+
       {children}
-      {renderFooter()}
+
+      {footer || (
+        <FormFooter
+          showSubmitButton={showSubmitButton}
+          showResetButton={showResetButton}
+          showCancelButton={showCancelButton}
+          submitText={submitText}
+          resetText={resetText}
+          cancelText={cancelText}
+          submitLoading={submitLoading}
+          onReset={handleReset}
+          onCancel={handleCancel}
+        />
+      )}
     </Form>
   );
 };
