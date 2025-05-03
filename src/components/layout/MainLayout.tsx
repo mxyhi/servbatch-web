@@ -82,44 +82,46 @@ const MainLayout: React.FC = () => {
   ];
 
   return (
-    <Layout className="min-h-screen">
+    <Layout className="h-screen overflow-hidden">
       <Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
         theme="light"
-        className="shadow-md transition-all duration-300 ease-in-out"
+        className="shadow-md transition-all duration-300 ease-in-out h-screen"
         breakpoint="md"
         width={220}
       >
-        <div className="py-4 px-4 h-16 flex items-center justify-center">
-          {!collapsed && (
-            <Title level={4} className="m-0 text-primary">
-              服务器管理系统
-            </Title>
-          )}
-          {collapsed && (
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-              S
-            </div>
-          )}
+        <div className="flex flex-col h-full">
+          <div className="py-4 px-4 h-16 flex items-center justify-center">
+            {!collapsed && (
+              <Title level={4} className="m-0 text-primary">
+                服务器管理系统
+              </Title>
+            )}
+            {collapsed && (
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                S
+              </div>
+            )}
+          </div>
+          <Menu
+            theme="light"
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            items={menuItems}
+            className="border-0 flex-1 overflow-y-auto"
+          />
         </div>
-        <Menu
-          theme="light"
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          className="border-0"
-        />
       </Sider>
 
-      <Layout>
+      <Layout className="overflow-auto">
         <Header
           style={{
             padding: 0,
             background: colorBgContainer,
           }}
-          className="flex justify-between items-center px-4 shadow-sm"
+          className="flex justify-between items-center px-4 shadow-sm sticky top-0 z-10"
         >
           <Button
             type="text"
