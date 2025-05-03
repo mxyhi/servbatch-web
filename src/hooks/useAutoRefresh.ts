@@ -128,16 +128,33 @@ const useAutoRefresh = ({
   // 自动刷新定时器
   useEffect(() => {
     let timerId: number | null = null;
+    let isMounted = true;
+
+    // 使用setTimeout递归实现轮询，防止任务堆积
+    const scheduleNextRefresh = async () => {
+      if (!isMounted || !autoRefresh) return;
+
+      try {
+        await refresh();
+      } catch (error) {
+        console.error("自动刷新出错:", error);
+      }
+
+      // 只有当组件仍然挂载且自动刷新仍然开启时，才设置下一次刷新
+      if (isMounted && autoRefresh) {
+        timerId = window.setTimeout(scheduleNextRefresh, refreshInterval);
+      }
+    };
 
     if (autoRefresh) {
-      timerId = window.setInterval(() => {
-        refresh();
-      }, refreshInterval);
+      // 立即开始第一次轮询
+      timerId = window.setTimeout(scheduleNextRefresh, refreshInterval);
     }
 
     return () => {
+      isMounted = false;
       if (timerId !== null) {
-        window.clearInterval(timerId);
+        window.clearTimeout(timerId);
       }
     };
   }, [autoRefresh, refreshInterval, refresh]);
