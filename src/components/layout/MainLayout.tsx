@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Menu, theme, Button, Typography } from "antd";
+import {
+  Layout,
+  Menu,
+  theme,
+  Button,
+  Typography,
+  Dropdown,
+  Avatar,
+  Space,
+} from "antd";
 import {
   DashboardOutlined,
   CloudServerOutlined,
@@ -9,8 +18,12 @@ import {
   MenuUnfoldOutlined,
   MonitorOutlined,
   ApiOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -18,6 +31,7 @@ const { Title } = Typography;
 const MainLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const { user, logout } = useAuth();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -100,6 +114,56 @@ const MainLayout: React.FC = () => {
       </Sider>
 
       <Layout>
+        <Header
+          style={{
+            padding: 0,
+            background: colorBgContainer,
+          }}
+          className="flex justify-between items-center px-4 shadow-sm"
+        >
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
+            className="text-lg"
+          />
+
+          <div className="flex items-center">
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: "profile",
+                    icon: <UserOutlined />,
+                    label: "个人信息",
+                  },
+                  {
+                    key: "settings",
+                    icon: <SettingOutlined />,
+                    label: "设置",
+                  },
+                  {
+                    type: "divider",
+                  },
+                  {
+                    key: "logout",
+                    icon: <LogoutOutlined />,
+                    label: "退出登录",
+                    onClick: logout,
+                  },
+                ],
+              }}
+            >
+              <Space className="cursor-pointer">
+                <Avatar icon={<UserOutlined />} />
+                <span className="hidden md:inline">
+                  {user?.username || "用户"}
+                </span>
+              </Space>
+            </Dropdown>
+          </div>
+        </Header>
+
         <Content
           className="m-4 md:m-6"
           style={{

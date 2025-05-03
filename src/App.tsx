@@ -9,6 +9,10 @@ import MainLayout from "./components/layout/MainLayout";
 // 全局消息服务
 import { GlobalMessageProvider } from "./utils/message";
 
+// 认证组件
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+
 // 页面组件
 import Dashboard from "./pages/dashboard";
 import Servers from "./pages/servers";
@@ -16,6 +20,7 @@ import Tasks from "./pages/tasks";
 import Executions from "./pages/executions";
 import CommandMonitors from "./pages/commandMonitors";
 import Proxies from "./pages/proxies";
+import Login from "./pages/login";
 
 // 自定义主题配置
 const customTheme = {
@@ -60,20 +65,28 @@ function App() {
           {/* 使用 Form.Provider 包装整个应用，解决 useForm 警告 */}
           <Form.Provider>
             <HashRouter>
-              <Routes>
-                <Route path="/" element={<MainLayout />}>
-                  <Route index element={<Dashboard />} />
-                  <Route path="servers" element={<Servers />} />
-                  <Route path="tasks" element={<Tasks />} />
-                  <Route path="executions" element={<Executions />} />
-                  <Route
-                    path="command-monitors"
-                    element={<CommandMonitors />}
-                  />
-                  <Route path="proxies" element={<Proxies />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Route>
-              </Routes>
+              <AuthProvider>
+                <Routes>
+                  {/* 公共路由 */}
+                  <Route path="/login" element={<Login />} />
+
+                  {/* 受保护路由 */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/" element={<MainLayout />}>
+                      <Route index element={<Dashboard />} />
+                      <Route path="servers" element={<Servers />} />
+                      <Route path="tasks" element={<Tasks />} />
+                      <Route path="executions" element={<Executions />} />
+                      <Route
+                        path="command-monitors"
+                        element={<CommandMonitors />}
+                      />
+                      <Route path="proxies" element={<Proxies />} />
+                      <Route path="*" element={<Navigate to="/" replace />} />
+                    </Route>
+                  </Route>
+                </Routes>
+              </AuthProvider>
             </HashRouter>
           </Form.Provider>
         </AntApp>
