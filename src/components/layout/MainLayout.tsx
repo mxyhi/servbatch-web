@@ -135,7 +135,7 @@ const MainLayout: React.FC = () => {
             className="text-lg"
           />
 
-          <div className="flex items-center">
+          <div className="flex items-center pr-2">
             <Dropdown
               menu={{
                 items: [
