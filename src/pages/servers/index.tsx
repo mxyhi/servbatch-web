@@ -45,7 +45,7 @@ const Servers: React.FC = () => {
     deleteMutation,
     testConnectionMutation,
     importServersMutation,
-  } = useServers(autoRefresh, 5000, true); // 启用自动测试连接
+  } = useServers(autoRefresh, 5000, false); // 禁用自动测试连接
 
   // 手动刷新处理函数
   const handleManualRefresh = useCallback(() => {
