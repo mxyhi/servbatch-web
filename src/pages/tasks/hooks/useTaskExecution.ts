@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Form } from "antd";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "../../../utils/message";
 import { executionsApi } from "../../../api/executions";
 import { serversApi } from "../../../api/servers";
@@ -14,16 +14,8 @@ export const useTaskExecution = () => {
   const [executeForm] = Form.useForm();
   const [isExecuteModalVisible, setIsExecuteModalVisible] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<ID | null>(null);
-  const [checkAll, setCheckAll] = useState(false);
-  const [indeterminate, setIndeterminate] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
-  // 获取服务器列表
-  const { data: servers } = useQuery({
-    queryKey: ["servers"],
-    queryFn: serversApi.getAllServers,
-  });
 
   // 执行任务
   const executeMutation = useMutation({
@@ -42,12 +34,73 @@ export const useTaskExecution = () => {
     },
   });
 
+  // 获取服务器选项
+  const fetchServerOptions = async (search: string, page: number) => {
+    try {
+      const result = await serversApi.getServersPaginatedSearch({
+        page,
+        pageSize: 10,
+        search,
+      });
+
+      // 将服务器数据转换为Select选项格式
+      const options = result.items.map((server) => ({
+        label: `${server.name} (${server.host})`,
+        value: server.id,
+      }));
+
+      return {
+        data: options,
+        total: result.total,
+      };
+    } catch (error) {
+      console.error("Error fetching server options:", error);
+      return {
+        data: [],
+        total: 0,
+      };
+    }
+  };
+
+  // 获取所有服务器选项（用于全选功能）
+  const fetchAllServerOptions = async () => {
+    try {
+      // 获取所有服务器（可能需要多次请求）
+      const allOptions = [];
+      let currentPage = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        const result = await serversApi.getServersPaginatedSearch({
+          page: currentPage,
+          pageSize: 100, // 使用较大的pageSize减少请求次数
+        });
+
+        const options = result.items.map((server) => ({
+          label: `${server.name} (${server.host})`,
+          value: server.id,
+        }));
+
+        allOptions.push(...options);
+
+        if (options.length < 100 || allOptions.length >= result.total) {
+          hasMore = false;
+        } else {
+          currentPage++;
+        }
+      }
+
+      return allOptions;
+    } catch (error) {
+      console.error("Error fetching all server options:", error);
+      return [];
+    }
+  };
+
   // 显示执行模态框
   const showExecuteModal = (taskId: ID) => {
     setSelectedTaskId(taskId);
     executeForm.resetFields();
-    setCheckAll(false);
-    setIndeterminate(false);
     setIsExecuteModalVisible(true);
   };
 
@@ -56,8 +109,6 @@ export const useTaskExecution = () => {
     setIsExecuteModalVisible(false);
     setSelectedTaskId(null);
     executeForm.resetFields();
-    setCheckAll(false);
-    setIndeterminate(false);
   };
 
   // 处理执行任务
@@ -76,42 +127,16 @@ export const useTaskExecution = () => {
     navigate(`/executions?taskId=${taskId}`);
   };
 
-  // 处理全选
-  const onCheckAllChange = (e: any) => {
-    const checked = e.target.checked;
-    const allServerIds = servers?.map((server) => server.id) || [];
-
-    executeForm.setFieldsValue({
-      serverIds: checked ? allServerIds : [],
-    });
-
-    setCheckAll(checked);
-    setIndeterminate(false);
-  };
-
-  // 处理选择变化
-  const onServerSelectChange = (selectedServerIds: ID[]) => {
-    const allServerIds = servers?.map((server) => server.id) || [];
-    setIndeterminate(
-      selectedServerIds.length > 0 &&
-        selectedServerIds.length < allServerIds.length
-    );
-    setCheckAll(selectedServerIds.length === allServerIds.length);
-  };
-
   return {
     executeForm,
     isExecuteModalVisible,
     selectedTaskId,
-    servers,
-    checkAll,
-    indeterminate,
     showExecuteModal,
     handleExecuteCancel,
     handleExecute,
     handleViewHistory,
-    onCheckAllChange,
-    onServerSelectChange,
     executeMutation,
+    fetchServerOptions,
+    fetchAllServerOptions,
   };
 };

@@ -1,18 +1,23 @@
 import React from "react";
-import { Modal, Form, Checkbox, Button } from "antd";
+import { Modal, Form, Button } from "antd";
 import { ServerEntity } from "../../../api/servers";
+import DebounceSelect from "../../../components/common/DebounceSelect";
+import { ID } from "../../../types/common";
 
 interface ExecuteTaskModalProps {
   visible: boolean;
   form: any;
-  servers: ServerEntity[] | undefined;
-  checkAll: boolean;
-  indeterminate: boolean;
   onCancel: () => void;
-  onExecute: (values: { serverIds: number[] }) => void;
-  onCheckAllChange: (e: any) => void;
-  onServerSelectChange: (selectedServerIds: number[]) => void;
+  onExecute: (values: { serverIds: ID[] }) => void;
   isLoading: boolean;
+  fetchServerOptions: (
+    search: string,
+    page: number
+  ) => Promise<{
+    data: { label: string; value: ID }[];
+    total: number;
+  }>;
+  fetchAllServerOptions?: () => Promise<{ label: string; value: ID }[]>;
 }
 
 /**
@@ -21,17 +26,14 @@ interface ExecuteTaskModalProps {
 const ExecuteTaskModal: React.FC<ExecuteTaskModalProps> = ({
   visible,
   form,
-  servers,
-  checkAll,
-  indeterminate,
   onCancel,
   onExecute,
-  onCheckAllChange,
-  onServerSelectChange,
   isLoading,
+  fetchServerOptions,
+  fetchAllServerOptions,
 }) => {
   const handleSubmit = () => {
-    form.validateFields().then((values: { serverIds: number[] }) => {
+    form.validateFields().then((values: { serverIds: ID[] }) => {
       onExecute(values);
     });
   };
@@ -54,31 +56,26 @@ const ExecuteTaskModal: React.FC<ExecuteTaskModalProps> = ({
           执行
         </Button>,
       ]}
+      width={600}
     >
       <Form form={form} layout="vertical">
-        <div className="mb-2">
-          <Checkbox
-            indeterminate={indeterminate}
-            onChange={onCheckAllChange}
-            checked={checkAll}
-          >
-            全选
-          </Checkbox>
-        </div>
         <Form.Item
           name="serverIds"
+          label="选择服务器"
           rules={[{ required: true, message: "请选择至少一个服务器" }]}
         >
-          <Checkbox.Group
-            className="flex flex-col gap-2"
-            onChange={onServerSelectChange as any}
-          >
-            {servers?.map((server) => (
-              <Checkbox key={server.id} value={server.id}>
-                {server.name} ({server.host})
-              </Checkbox>
-            ))}
-          </Checkbox.Group>
+          <DebounceSelect
+            mode="multiple"
+            placeholder="点击选择服务器"
+            fetchOptions={fetchServerOptions}
+            fetchAllOptions={fetchAllServerOptions}
+            showSelectAll={true}
+            style={{ width: "100%" }}
+            optionFilterProp="label"
+            optionLabelProp="label"
+            maxTagCount="responsive"
+            virtual={false} // 禁用虚拟滚动，避免全选时出现问题
+          />
         </Form.Item>
       </Form>
     </Modal>

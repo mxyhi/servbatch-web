@@ -26,6 +26,7 @@ export interface ServerPaginationParams extends PaginationParams {
   host?: string;
   status?: ServerStatus;
   connectionType?: ServerConnectionType;
+  search?: string;
 }
 
 export const serversApi = {
@@ -127,6 +128,37 @@ export const serversApi = {
     importData: ImportServersDto
   ): Promise<ImportServersResultDto> => {
     const response = await api.post("/servers/import", importData);
+    return response.data;
+  },
+
+  // 获取服务器列表（分页搜索）
+  getServersPaginatedSearch: async (
+    params: {
+      page?: number;
+      pageSize?: number;
+      search?: string;
+    } = {}
+  ): Promise<{
+    items: ServerEntity[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  }> => {
+    const { page = 1, pageSize = 10, search } = params;
+    // Filter out undefined values before sending
+    const queryParams = Object.fromEntries(
+      Object.entries({
+        page,
+        pageSize,
+        search,
+      }).filter(([, v]) => v !== undefined && v !== null && v !== "")
+    );
+    // 使用现有的getServersPaginated API，但添加search参数
+    // 实际项目中可能需要创建新的后端API端点
+    const response = await api.get("/servers", {
+      params: queryParams,
+    });
     return response.data;
   },
 };

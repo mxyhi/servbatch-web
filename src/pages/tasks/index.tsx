@@ -35,17 +35,13 @@ const Tasks: React.FC = () => {
   const {
     executeForm,
     isExecuteModalVisible,
-
-    servers,
-    checkAll,
-    indeterminate,
     showExecuteModal,
     handleExecuteCancel,
     handleExecute,
     handleViewHistory,
-    onCheckAllChange,
-    onServerSelectChange,
     executeMutation,
+    fetchServerOptions,
+    fetchAllServerOptions,
   } = useTaskExecution();
 
   // 处理表单提交
@@ -92,14 +88,11 @@ const Tasks: React.FC = () => {
       <ExecuteTaskModal
         visible={isExecuteModalVisible}
         form={executeForm}
-        servers={servers}
-        checkAll={checkAll}
-        indeterminate={indeterminate}
         onCancel={handleExecuteCancel}
         onExecute={handleExecute}
-        onCheckAllChange={onCheckAllChange}
-        onServerSelectChange={onServerSelectChange}
         isLoading={executeMutation.isPending}
+        fetchServerOptions={fetchServerOptions}
+        fetchAllServerOptions={fetchAllServerOptions}
       />
     </div>
   );
