@@ -1,7 +1,6 @@
-import React from "react";
-import { ServerEntity } from "../../../api/servers";
 import { UseMutationResult } from "@tanstack/react-query";
-import { ServerStatus } from "../../../constants";
+import { ServerEntity } from "../../../types/api";
+import { ServerStatusValue } from "../../../constants";
 import {
   ServerStatusTag,
   DateDisplay,
@@ -10,12 +9,13 @@ import {
   DeleteButton,
   ActionGroup,
 } from "../../../components/common";
+import { ID } from "../../../types/common";
 
 interface ServerTableColumnsProps {
   showModal: (server?: ServerEntity) => void;
-  handleDelete: (id: number) => void;
-  handleTestConnection: (id: number) => void;
-  testConnectionMutation: UseMutationResult<void, Error, number, unknown>;
+  handleDelete: (id: ID) => void;
+  handleTestConnection: (id: ID) => void;
+  testConnectionMutation: UseMutationResult<void, Error, ID, unknown>;
 }
 
 export const getServerTableColumns = ({
@@ -62,7 +62,9 @@ export const getServerTableColumns = ({
       title: "状态",
       dataIndex: "status",
       key: "status",
-      render: (status: ServerStatus) => <ServerStatusTag status={status} />,
+      render: (status: ServerStatusValue) => (
+        <ServerStatusTag status={status} />
+      ),
     },
     {
       title: "最后检查时间",

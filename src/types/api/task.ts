@@ -1,7 +1,7 @@
 /**
  * 任务相关类型定义
  */
-import { ID } from "../common";
+
 import { BaseEntity } from "./common";
 
 // 创建任务DTO

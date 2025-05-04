@@ -161,8 +161,10 @@ const CommandMonitors: React.FC = () => {
   };
 
   // 显示执行历史抽屉
-  const showHistoryDrawer = (monitorId: number) => {
-    setSelectedMonitorId(monitorId);
+  const showHistoryDrawer = (monitorId: string | number) => {
+    setSelectedMonitorId(
+      typeof monitorId === "string" ? parseInt(monitorId, 10) : monitorId
+    );
     setIsHistoryDrawerVisible(true);
   };
 
@@ -232,7 +234,7 @@ const CommandMonitors: React.FC = () => {
       <CommandMonitorHistory
         visible={isHistoryDrawerVisible}
         onClose={closeHistoryDrawer}
-        monitor={getCurrentMonitor()}
+        monitor={getCurrentMonitor() || undefined}
         executions={monitorExecutions}
         isLoading={executionsLoading}
         onExecutionsChange={() => {

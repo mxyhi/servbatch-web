@@ -7,6 +7,7 @@ import ServerHeader from "./components/ServerHeader";
 import ServerTable from "./components/ServerTable";
 import { useModalForm } from "../../hooks/useModalForm";
 import useAutoRefresh from "../../hooks/useAutoRefresh";
+import { ID } from "../../types/common";
 
 /**
  * 服务器管理页面
@@ -76,8 +77,8 @@ const Servers: React.FC = () => {
         servers={servers}
         isLoading={isLoading}
         onEdit={serverForm.showModal}
-        onDelete={deleteMutation.mutate}
-        onTestConnection={testConnectionMutation.mutate}
+        onDelete={(id: ID) => deleteMutation.mutate(id)}
+        onTestConnection={(id: ID) => testConnectionMutation.mutate(id)}
         testConnectionMutation={testConnectionMutation}
         tableProps={{
           pagination,

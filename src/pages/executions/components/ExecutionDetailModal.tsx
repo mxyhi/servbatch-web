@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Button, Descriptions, Typography } from "antd";
-import { TaskExecutionEntity } from "../../../api/executions";
+import { TaskExecutionEntity } from "../../../types/api";
 
 const { Text } = Typography;
 
@@ -55,17 +55,27 @@ const ExecutionDetailModal: React.FC<ExecutionDetailModalProps> = ({
       <Descriptions bordered column={2}>
         <Descriptions.Item label="ID">{execution.id}</Descriptions.Item>
         <Descriptions.Item label="任务ID">{execution.taskId}</Descriptions.Item>
-        <Descriptions.Item label="服务器ID">{execution.serverId}</Descriptions.Item>
-        <Descriptions.Item label="状态">{getStatusText(execution.status)}</Descriptions.Item>
-        <Descriptions.Item label="退出码">{execution.exitCode ?? "-"}</Descriptions.Item>
+        <Descriptions.Item label="服务器ID">
+          {execution.serverId}
+        </Descriptions.Item>
+        <Descriptions.Item label="状态">
+          {getStatusText(execution.status)}
+        </Descriptions.Item>
+        <Descriptions.Item label="退出码">
+          {execution.exitCode ?? "-"}
+        </Descriptions.Item>
         <Descriptions.Item label="创建时间">
           {new Date(execution.createdAt).toLocaleString()}
         </Descriptions.Item>
         <Descriptions.Item label="开始时间">
-          {execution.startedAt ? new Date(execution.startedAt).toLocaleString() : "-"}
+          {execution.startedAt
+            ? new Date(execution.startedAt).toLocaleString()
+            : "-"}
         </Descriptions.Item>
         <Descriptions.Item label="完成时间">
-          {execution.completedAt ? new Date(execution.completedAt).toLocaleString() : "-"}
+          {execution.completedAt
+            ? new Date(execution.completedAt).toLocaleString()
+            : "-"}
         </Descriptions.Item>
       </Descriptions>
 

@@ -4,11 +4,12 @@ import {
   UseMutationResult,
 } from "@tanstack/react-query";
 import { message } from "../utils/message";
+import { ID } from "../types/common";
 
 interface CrudApi<T, C, U> {
   create: (data: C) => Promise<T>;
-  update: (id: number, data: U) => Promise<T>;
-  delete: (id: number) => Promise<any>;
+  update: (id: ID, data: U) => Promise<T>;
+  delete: (id: ID) => Promise<any>;
 }
 
 interface CrudMessages {
@@ -22,8 +23,8 @@ interface CrudMessages {
 
 interface UseCrudOperationsResult<T, C, U> {
   createMutation: UseMutationResult<T, Error, C, unknown>;
-  updateMutation: UseMutationResult<T, Error, { id: number; data: U }, unknown>;
-  deleteMutation: UseMutationResult<any, Error, number, unknown>;
+  updateMutation: UseMutationResult<T, Error, { id: ID; data: U }, unknown>;
+  deleteMutation: UseMutationResult<any, Error, ID, unknown>;
 }
 
 /**
@@ -75,7 +76,7 @@ export function useCrudOperations<T, C, U>(
 
   // 更新实体
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: U }) => api.update(id, data),
+    mutationFn: ({ id, data }: { id: ID; data: U }) => api.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeyArray });
       message.success(finalMessages.updateSuccess);

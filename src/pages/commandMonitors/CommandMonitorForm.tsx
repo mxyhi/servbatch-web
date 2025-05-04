@@ -1,14 +1,14 @@
 import React from "react";
 import { Input, Switch, Select, Form } from "antd";
-import { CommandMonitorEntity } from "../../api/commandMonitors";
+import { ServerEntity } from "../../types/api";
 
 const { TextArea } = Input;
 const { Item } = Form;
 
 interface CommandMonitorFormProps {
-  form: any;
-  isEditMode: boolean;
-  servers?: any[];
+  form?: any;
+  isEditMode?: boolean;
+  servers?: ServerEntity[];
   onSubmit?: (values: any) => void;
   onCancel?: () => void;
 }
@@ -17,11 +17,7 @@ interface CommandMonitorFormProps {
  * 命令监控表单组件
  */
 const CommandMonitorForm: React.FC<CommandMonitorFormProps> = ({
-  form,
-  isEditMode,
   servers = [],
-  onSubmit,
-  onCancel,
 }) => {
   return (
     <>

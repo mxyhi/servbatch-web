@@ -1,15 +1,17 @@
 import React, { useEffect, useRef } from "react";
 import * as echarts from "echarts";
-import { ServerStatus } from "../../../api/dashboard";
+import { ServerStatusInfo } from "../../../types/api";
 
 interface ServerStatusChartProps {
-  serverStatus: ServerStatus[] | undefined;
+  serverStatus: ServerStatusInfo[] | undefined;
 }
 
 /**
  * 服务器状态图表组件
  */
-const ServerStatusChart: React.FC<ServerStatusChartProps> = ({ serverStatus }) => {
+const ServerStatusChart: React.FC<ServerStatusChartProps> = ({
+  serverStatus,
+}) => {
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -17,7 +19,9 @@ const ServerStatusChart: React.FC<ServerStatusChartProps> = ({ serverStatus }) =
       const chart = echarts.init(chartRef.current);
 
       // 统计在线和离线服务器数量
-      const onlineCount = serverStatus.filter((s) => s.online).length;
+      const onlineCount = serverStatus.filter(
+        (s) => s.status === "online"
+      ).length;
       const offlineCount = serverStatus.length - onlineCount;
 
       const option = {

@@ -22,7 +22,6 @@ const Users: React.FC = () => {
     refetch,
     createMutation,
     updateMutation,
-    deleteMutation,
     tablePaginationConfig,
     handleTableChange,
   } = useEntityCRUD<UserEntity, CreateUserDto, UpdateUserDto>({
@@ -81,7 +80,7 @@ const Users: React.FC = () => {
         }),
       ],
       // Add explicit types to the hidden function parameters, although the type definition should cover this
-      hidden: (form: FormInstance, isEditMode: boolean) => false,
+      hidden: () => false,
     },
     {
       name: "email",
@@ -99,7 +98,8 @@ const Users: React.FC = () => {
           <Select.Option value="user">普通用户</Select.Option>
         </Select>
       ),
-      defaultValue: "user",
+      // 使用初始值
+      rules: [{ required: true, message: "请选择角色" }],
     },
   ];
 

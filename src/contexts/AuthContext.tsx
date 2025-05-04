@@ -7,14 +7,15 @@ import React, {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { message } from "../utils/message";
-import { LoginDto, authApi } from "../api/auth";
+import { authApi } from "../api/auth";
+import { LoginDto } from "../types/api/auth";
 import { clearAuth, getUser, isAuthenticated, saveAuth } from "../utils/auth";
 
 // 用户类型
 export interface User {
   id: number;
   username: string;
-  email?: string;
+  email?: string | null;
   role: "admin" | "user";
   isActive: boolean;
 }

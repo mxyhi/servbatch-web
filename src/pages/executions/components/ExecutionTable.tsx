@@ -1,15 +1,15 @@
 import React from "react";
 import { Table, Button, Space, Popconfirm, Tag } from "antd";
 import { DeleteOutlined, StopOutlined, EyeOutlined } from "@ant-design/icons";
-import { TaskExecutionEntity } from "../../../api/executions";
+import { TaskExecutionEntity } from "../../../types/api";
 import { ColumnsType } from "antd/es/table";
 
 interface ExecutionTableProps {
   executions: TaskExecutionEntity[] | undefined;
   isLoading: boolean;
   onViewDetail: (execution: TaskExecutionEntity) => void;
-  onCancel: (id: number) => void;
-  onDelete: (id: number) => void;
+  onCancel: (id: string | number) => void;
+  onDelete: (id: string | number) => void;
 }
 
 /**
@@ -104,10 +104,7 @@ const ExecutionTable: React.FC<ExecutionTableProps> = ({
       width: 250,
       render: (_, record: TaskExecutionEntity) => (
         <Space size="middle">
-          <Button
-            icon={<EyeOutlined />}
-            onClick={() => onViewDetail(record)}
-          >
+          <Button icon={<EyeOutlined />} onClick={() => onViewDetail(record)}>
             详情
           </Button>
           {(record.status === "queued" || record.status === "running") && (

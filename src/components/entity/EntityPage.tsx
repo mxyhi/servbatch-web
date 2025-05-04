@@ -139,13 +139,15 @@ function EntityPage<T extends Record<string, any>, C = any, U = any>({
     showModal,
     hideModal,
     submitForm,
-    editingEntity,
+    // 移除未使用的变量
   } = useModalForm<T>({
     onSuccess: async (values, entity) => {
       if (entity && onUpdateEntity) {
-        await onUpdateEntity(entity.id, values as U);
+        // 使用双重类型断言，先转为 unknown 再转为目标类型，避免直接转换错误
+        await onUpdateEntity(entity.id, values as unknown as U);
       } else if (onCreateEntity) {
-        await onCreateEntity(values as C);
+        // 使用双重类型断言，先转为 unknown 再转为目标类型，避免直接转换错误
+        await onCreateEntity(values as unknown as C);
       }
     },
     closeOnSuccess: true,
@@ -180,13 +182,14 @@ function EntityPage<T extends Record<string, any>, C = any, U = any>({
     showModal();
   }, [showModal]);
 
-  // 处理编辑按钮点击
-  const handleEdit = useCallback(
+  // 注意：handleEdit 函数目前未在组件中使用
+  // 但保留它以便将来可能的扩展或传递给子组件
+  /* const handleEdit = useCallback(
     (entity: T) => {
       showModal(entity);
     },
     [showModal]
-  );
+  ); */
 
   // 处理刷新按钮点击
   const handleRefresh = useCallback(() => {

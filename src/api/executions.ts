@@ -1,14 +1,22 @@
 import api from "./axios";
 import { DEFAULT_PAGE_SIZE } from "../constants";
 import {
-  CreateTaskExecutionDto,
-  TaskExecutionEntity,
-  CleanupByDateDto,
-  CleanupByStatusDto,
-  CleanupResultDto,
-  PaginationParams,
+  CreateTaskExecutionDto as CreateTaskExecutionDtoType,
+  TaskExecutionEntity as TaskExecutionEntityType,
+  CleanupByDateDto as CleanupByDateDtoType,
+  CleanupByStatusDto as CleanupByStatusDtoType,
+  CleanupResultDto as CleanupResultDtoType,
+  PaginationParams as PaginationParamsType,
   // ExecutionStatus is already defined globally, no need for local enum array
 } from "../types/api"; // Import global types
+
+// Re-export types for use in components
+export type TaskExecutionEntity = TaskExecutionEntityType;
+export type CreateTaskExecutionDto = CreateTaskExecutionDtoType;
+export type CleanupByDateDto = CleanupByDateDtoType;
+export type CleanupByStatusDto = CleanupByStatusDtoType;
+export type CleanupResultDto = CleanupResultDtoType;
+export type PaginationParams = PaginationParamsType;
 import { ID } from "../types/common"; // Import ID type
 
 // Define specific pagination params for executions

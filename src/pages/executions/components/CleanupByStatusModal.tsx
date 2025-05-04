@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, Form, Checkbox, Button } from "antd";
-import { CleanupByStatusDto } from "../../../api/executions";
+import { CleanupByStatusDto } from "../../../types/api";
+import { ExecutionStatusValue } from "../../../constants";
 
 interface CleanupByStatusModalProps {
   visible: boolean;
@@ -29,9 +30,11 @@ const CleanupByStatusModal: React.FC<CleanupByStatusModalProps> = ({
   ];
 
   const handleSubmit = () => {
-    form.validateFields().then((values: { statuses: string[] }) => {
-      onCleanup({ statuses: values.statuses });
-    });
+    form
+      .validateFields()
+      .then((values: { statuses: ExecutionStatusValue[] }) => {
+        onCleanup({ statuses: values.statuses as any });
+      });
   };
 
   return (

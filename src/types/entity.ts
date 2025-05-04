@@ -2,15 +2,15 @@
  * 实体相关类型定义
  */
 import { ReactNode } from "react";
-import { FormInstance } from "antd/es/form";
+
 import { TablePaginationConfig } from "antd/es/table";
 import { UseMutationResult } from "@tanstack/react-query";
-import { BaseEntity } from "./api";
-import { FormItem, FormLayout } from "./form";
+
+import { FormItem } from "./form";
 import { ID, PaginationParams, PaginatedResponse } from "./common";
 
 // 实体表格配置
-export interface EntityTableConfig<T> {
+export interface EntityTableConfig {
   columns: Array<Record<string, unknown>>;
   rowKey?: string;
   pagination?: TablePaginationConfig | false;
@@ -22,7 +22,7 @@ export interface EntityTableConfig<T> {
 // 实体表单配置
 export interface EntityFormConfig {
   items: FormItem[];
-  layout?: FormLayout;
+  layout?: "horizontal" | "vertical" | "inline";
   columns?: number;
   gutter?: number;
 }

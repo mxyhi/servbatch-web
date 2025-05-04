@@ -10,7 +10,7 @@ interface FormItemProps {
 
 /**
  * 表单项组件
- * 
+ *
  * 处理单个表单项的渲染，支持自定义渲染函数
  */
 const FormItem: React.FC<FormItemProps> = ({ item, form, isEditMode }) => {
@@ -20,6 +20,12 @@ const FormItem: React.FC<FormItemProps> = ({ item, form, isEditMode }) => {
   }
 
   // 默认渲染
+  // 计算hidden属性值
+  const isHidden =
+    typeof item.hidden === "function"
+      ? item.hidden(form, isEditMode)
+      : item.hidden;
+
   return (
     <div className={`col-span-${item.colSpan || 1}`}>
       <Form.Item
@@ -29,7 +35,7 @@ const FormItem: React.FC<FormItemProps> = ({ item, form, isEditMode }) => {
         tooltip={item.tooltip}
         extra={item.extra}
         dependencies={item.dependencies}
-        hidden={item.hidden}
+        hidden={isHidden}
       >
         {item.component}
       </Form.Item>

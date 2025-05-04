@@ -1,6 +1,6 @@
 /**
  * 实体组件导出文件
- * 
+ *
  * 统一导出所有实体相关组件，方便使用
  */
 
@@ -10,7 +10,8 @@ export type { EntityTableProps } from "./EntityTable";
 
 // 表单组件
 export { default as EntityForm } from "./EntityForm";
-export type { EntityFormProps, EntityFormItem } from "./EntityForm";
+export type { EntityFormProps } from "./EntityForm";
+export type { FormItem as EntityFormItem } from "../../types/form";
 
 // 模态框组件
 export { default as EntityModal } from "./EntityModal";

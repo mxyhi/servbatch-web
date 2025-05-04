@@ -6,79 +6,80 @@ import { SyncOutlined } from "@ant-design/icons";
 /**
  * 实体表格属性
  */
-export interface EntityTableProps<T extends Record<string, any>> extends Omit<TableProps<T>, "loading" | "dataSource"> {
+export interface EntityTableProps<T extends Record<string, any>>
+  extends Omit<TableProps<T>, "loading" | "dataSource" | "title" | "footer"> {
   /** 表格数据 */
   entities?: T[];
-  
+
   /** 是否加载中 */
   isLoading?: boolean;
-  
+
   /** 是否正在刷新 */
   isRefreshing?: boolean;
-  
+
   /** 分页配置 */
   pagination?: TablePaginationConfig | false;
-  
+
   /** 空状态展示 */
   emptyContent?: ReactNode;
-  
+
   /** 错误状态展示 */
   errorContent?: ReactNode;
-  
+
   /** 表格标题 */
-  title?: ReactNode;
-  
+  title?: ReactNode | ((...args: any[]) => ReactNode);
+
   /** 表格底部 */
   footer?: ReactNode;
-  
+
   /** 表格工具栏 */
   toolbar?: ReactNode;
-  
+
   /** 表格大小 */
   size?: "small" | "middle" | "large";
-  
+
   /** 表格样式 */
   className?: string;
-  
+
   /** 是否显示边框 */
   bordered?: boolean;
-  
+
   /** 是否显示表头 */
   showHeader?: boolean;
-  
+
   /** 是否显示序号列 */
   showIndex?: boolean;
-  
+
   /** 序号列标题 */
   indexColumnTitle?: string;
-  
+
   /** 序号列宽度 */
   indexColumnWidth?: number;
-  
+
   /** 是否可选择 */
   selectable?: boolean;
-  
+
   /** 选择类型 */
   selectionType?: "checkbox" | "radio";
-  
+
   /** 选择的行 */
   selectedRowKeys?: React.Key[];
-  
+
   /** 选择改变回调 */
   onSelectionChange?: (selectedRowKeys: React.Key[], selectedRows: T[]) => void;
-  
+
   /** 行点击回调 */
-  onRowClick?: (record: T, index: number) => void;
-  
+  onRowClick?: (record: T, index: number | undefined) => void;
+
   /** 刷新回调 */
   onRefresh?: () => void;
 }
 
 /**
  * 通用实体表格组件
- * 
+ *
  * 基于Ant Design Table组件，增强了实体数据展示功能
- * 
+ *
  * @example
  * ```tsx
  * <EntityTable
@@ -128,7 +129,7 @@ function EntityTable<T extends Record<string, any> = any>({
   // 构建表格列
   const tableColumns = useMemo(() => {
     const result = [...columns];
-    
+
     // 添加序号列
     if (showIndex) {
       result.unshift({
@@ -139,39 +140,39 @@ function EntityTable<T extends Record<string, any> = any>({
         render: (_: any, __: any, index: number) => index + 1,
       });
     }
-    
+
     return result;
   }, [columns, showIndex, indexColumnTitle, indexColumnWidth]);
-  
+
   // 构建选择配置
   const rowSelection = useMemo(() => {
     if (!selectable) return undefined;
-    
+
     return {
       type: selectionType,
       selectedRowKeys,
       onChange: onSelectionChange,
     };
   }, [selectable, selectionType, selectedRowKeys, onSelectionChange]);
-  
+
   // 构建行属性
   const onRow = useMemo(() => {
     if (!onRowClick) return undefined;
-    
-    return (record: T, index: number) => ({
-      onClick: () => onRowClick(record, index),
+
+    return (record: T, index: number | undefined) => ({
+      onClick: () => onRowClick(record, index ?? 0),
     });
   }, [onRowClick]);
-  
+
   // 构建表格标题
   const tableTitle = useMemo(() => {
     if (!title && !toolbar && !onRefresh) return undefined;
-    
+
     return () => (
       <div className="flex justify-between items-center">
         {title && (
           <Typography.Title level={5} className="m-0">
-            {title}
+            {typeof title === "function" ? title() : title}
           </Typography.Title>
         )}
         <div className="flex items-center space-x-2">
@@ -187,20 +188,20 @@ function EntityTable<T extends Record<string, any> = any>({
       </div>
     );
   }, [title, toolbar, onRefresh, isRefreshing]);
-  
+
   // 构建空状态内容
   const emptyState = useMemo(() => {
     if (errorContent) {
       return errorContent;
     }
-    
+
     if (emptyContent) {
       return emptyContent;
     }
-    
+
     return <Empty description="暂无数据" />;
   }, [emptyContent, errorContent]);
-  
+
   return (
     <Spin spinning={isLoading}>
       <Table<T>

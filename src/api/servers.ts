@@ -1,16 +1,23 @@
 import api from "./axios";
 import { DEFAULT_PAGE_SIZE } from "../constants";
 import {
-  CreateServerDto,
-  ServerEntity,
-  UpdateServerDto,
-  ImportServersDto,
-  ImportServersResultDto,
-  PaginationParams,
-  PaginationResult,
+  CreateServerDto as CreateServerDtoType,
+  ServerEntity as ServerEntityType,
+  UpdateServerDto as UpdateServerDtoType,
+  ImportServersDto as ImportServersDtoType,
+  ImportServersResultDto as ImportServersResultDtoType,
+  PaginationParams as PaginationParamsType,
   ServerStatus,
   ServerConnectionType,
 } from "../types/api"; // Import global types
+
+// Re-export types for use in components
+export type ServerEntity = ServerEntityType;
+export type CreateServerDto = CreateServerDtoType;
+export type UpdateServerDto = UpdateServerDtoType;
+export type ImportServersDto = ImportServersDtoType;
+export type ImportServersResultDto = ImportServersResultDtoType;
+export type PaginationParams = PaginationParamsType;
 import { ID } from "../types/common"; // Import ID type
 
 // Define specific pagination params for servers including filters

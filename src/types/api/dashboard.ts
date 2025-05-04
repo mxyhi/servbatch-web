@@ -21,6 +21,8 @@ export interface SystemSummary {
 export interface SystemSummaryWithProxies extends SystemSummary {
   totalProxies: number;
   onlineProxies: number;
+  executionsToday: number;
+  successRate: number;
 }
 
 // 服务器状态信息

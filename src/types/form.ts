@@ -3,7 +3,6 @@
  */
 import { ReactNode } from "react";
 import { FormInstance, Rule } from "antd/es/form";
-import { FormLayout } from "./common";
 
 // 表单项配置
 export interface FormItem {

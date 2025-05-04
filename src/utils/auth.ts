@@ -1,8 +1,8 @@
-import { LoginResponse } from '../api/auth';
+import { LoginResponse } from "../types/api";
 
 // 本地存储键
-const TOKEN_KEY = 'auth_token';
-const USER_KEY = 'auth_user';
+const TOKEN_KEY = "auth_token";
+const USER_KEY = "auth_user";
 
 // 保存认证信息到本地存储
 export const saveAuth = (data: LoginResponse) => {

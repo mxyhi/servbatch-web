@@ -10,6 +10,7 @@ import { useCrudOperations } from "../../../hooks/useCrudOperations";
 import { message } from "../../../utils/message";
 import { useEffect, useRef } from "react";
 import usePaginatedServersData from "./usePaginatedServersData";
+import { ID } from "../../../types/common";
 
 /**
  * 服务器管理Hook
@@ -49,7 +50,7 @@ export const useServers = (
   );
 
   // 测试服务器连接
-  const testConnectionMutation = useCrudOperations<void, number, never>(
+  const testConnectionMutation = useCrudOperations<void, ID, never>(
     {
       create: serversApi.testConnection,
       update: () => Promise.reject("不支持的操作"),
@@ -96,7 +97,7 @@ export const useServers = (
   // 上次刷新时间的引用
   const lastRefreshTimeRef = useRef<number>(0);
   // 测试连接中的服务器ID集合
-  const testingServersRef = useRef<Set<number>>(new Set());
+  const testingServersRef = useRef<Set<string | number>>(new Set());
 
   // 自动测试服务器连接
   useEffect(() => {
@@ -128,7 +129,7 @@ export const useServers = (
 
     // 测试所有服务器连接
     // 使用setTimeout错开测试时间，避免同时发起太多请求
-    servers.forEach((server, index) => {
+    servers.forEach((server: { id: string | number }, index: number) => {
       // 如果该服务器已经在测试中，则跳过
       if (testingServersRef.current.has(server.id)) {
         return;
@@ -140,12 +141,15 @@ export const useServers = (
       // 错开测试时间，每个服务器间隔200ms
       setTimeout(() => {
         // 测试连接
-        testConnectionMutation.mutate(server.id, {
-          onSettled: () => {
-            // 测试完成后从集合中移除
-            testingServersRef.current.delete(server.id);
-          },
-        });
+        testConnectionMutation.mutate(
+          typeof server.id === "string" ? parseInt(server.id, 10) : server.id,
+          {
+            onSettled: () => {
+              // 测试完成后从集合中移除
+              testingServersRef.current.delete(server.id);
+            },
+          }
+        );
       }, index * 200);
     });
   }, [

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Form, Input, Tag, Space, Button } from "antd";
-import { CloudServerOutlined, ApiOutlined } from "@ant-design/icons";
+import { Input, Tag } from "antd";
 import { useEntityCRUD } from "../../hooks/useEntityCRUD";
 import { EntityPage, EntityFormItem } from "../../components/entity";
 import { proxiesApi } from "../../api/proxies";
@@ -22,7 +21,6 @@ const Proxies: React.FC = () => {
     refetch,
     createMutation,
     updateMutation,
-    deleteMutation,
     tablePaginationConfig,
     handleTableChange,
   } = useEntityCRUD<ProxyEntity, CreateProxyDto, UpdateProxyDto>({
@@ -62,7 +60,7 @@ const Proxies: React.FC = () => {
       label: "代理ID",
       component: <Input placeholder="请输入代理ID，如 proxy-1" />,
       rules: [{ required: true, message: "请输入代理ID" }],
-      hidden: (form, isEditMode) => isEditMode, // 编辑模式下隐藏ID字段
+      hidden: (_, isEditMode) => isEditMode, // 编辑模式下隐藏ID字段
     },
     {
       name: "name",

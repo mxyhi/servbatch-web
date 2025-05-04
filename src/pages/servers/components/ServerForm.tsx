@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Form, Input, InputNumber, Select, FormInstance, Tooltip } from "antd";
+import { Form, Input, InputNumber, Select, FormInstance } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { ConnectionType } from "../../../constants";
 
@@ -47,7 +47,7 @@ const ServerForm: React.FC<ServerFormProps> = ({ form }) => {
   );
 
   // 代理服务器ID验证规则
-  const proxyIdValidator = (_, value: string) => {
+  const proxyIdValidator = (_: any, value: string) => {
     const connectionType = form.getFieldValue("connectionType");
     if (connectionType !== ConnectionType.PROXY || value) {
       return Promise.resolve();
@@ -79,7 +79,15 @@ const ServerForm: React.FC<ServerFormProps> = ({ form }) => {
         name="port"
         label="SSH端口"
         initialValue={22}
-        rules={rules.port}
+        rules={[
+          { required: true, message: "请输入SSH端口" },
+          {
+            type: "number",
+            min: 1,
+            max: 65535,
+            message: "端口号必须在1-65535之间",
+          },
+        ]}
         tooltip="SSH服务的端口号，默认为22"
       >
         <InputNumber min={1} max={65535} style={{ width: "100%" }} />

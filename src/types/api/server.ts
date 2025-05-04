@@ -1,7 +1,7 @@
 /**
  * 服务器相关类型定义
  */
-import { ID } from "../common";
+
 import { BaseEntity } from "./common";
 
 // 服务器连接类型

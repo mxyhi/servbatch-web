@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Form, DatePicker, Button } from "antd";
-import { CleanupByDateDto } from "../../../api/executions";
+import { CleanupByDateDto } from "../../../types/api";
 import dayjs from "dayjs";
 
 const { RangePicker } = DatePicker;
@@ -24,11 +24,13 @@ const CleanupByDateModal: React.FC<CleanupByDateModalProps> = ({
   isLoading,
 }) => {
   const handleSubmit = () => {
-    form.validateFields().then((values: { dateRange: [dayjs.Dayjs, dayjs.Dayjs] }) => {
-      const startDate = values.dateRange[0].format("YYYY-MM-DD");
-      const endDate = values.dateRange[1].format("YYYY-MM-DD");
-      onCleanup({ startDate, endDate });
-    });
+    form
+      .validateFields()
+      .then((values: { dateRange: [dayjs.Dayjs, dayjs.Dayjs] }) => {
+        const startDate = values.dateRange[0].format("YYYY-MM-DD");
+        const endDate = values.dateRange[1].format("YYYY-MM-DD");
+        onCleanup({ startDate, endDate });
+      });
   };
 
   return (

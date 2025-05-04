@@ -1,5 +1,12 @@
 import api from "./axios";
-import { LoginDto, LoginResponse } from "../types/api"; // Import global types
+import {
+  LoginDto as LoginDtoType,
+  LoginResponse as LoginResponseType,
+} from "../types/api"; // Import global types
+
+// Re-export types for use in components
+export type LoginDto = LoginDtoType;
+export type LoginResponse = LoginResponseType;
 
 export const authApi = {
   // 用户登录

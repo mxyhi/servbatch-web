@@ -6,9 +6,11 @@ import {
   UpdateServerDto,
   ImportServersResultDto,
   PaginationParams,
-  ServerPaginationResult,
 } from "../../../api/servers";
-import { DEFAULT_REFRESH_INTERVAL, DEFAULT_PAGE_SIZE } from "../../../constants";
+import {
+  DEFAULT_REFRESH_INTERVAL,
+  DEFAULT_PAGE_SIZE,
+} from "../../../constants";
 import { useCrudOperations } from "../../../hooks/useCrudOperations";
 import { message } from "../../../utils/message";
 import { useEffect, useRef, useState } from "react";
@@ -40,7 +42,7 @@ export const useServersPaginated = (
     data: serversPaginated,
     isLoading,
     refetch,
-  } = useQuery<ServerPaginationResult>({
+  } = useQuery({
     queryKey: ["servers", "paginated", pagination],
     queryFn: () => serversApi.getServersPaginated(pagination),
     refetchInterval: autoRefresh ? refreshInterval : false,
@@ -66,7 +68,11 @@ export const useServersPaginated = (
   );
 
   // 测试服务器连接
-  const testConnectionMutation = useCrudOperations<void, number, never>(
+  const testConnectionMutation = useCrudOperations<
+    void,
+    string | number,
+    never
+  >(
     {
       create: serversApi.testConnection,
       update: () => Promise.reject("不支持的操作"),
@@ -113,7 +119,7 @@ export const useServersPaginated = (
   // 上次刷新时间的引用
   const lastRefreshTimeRef = useRef<number>(0);
   // 测试连接中的服务器ID集合
-  const testingServersRef = useRef<Set<number>>(new Set());
+  const testingServersRef = useRef<Set<string | number>>(new Set());
 
   // 自动测试服务器连接
   useEffect(() => {
@@ -145,26 +151,28 @@ export const useServersPaginated = (
 
     // 测试所有服务器连接
     // 使用setTimeout错开测试时间，避免同时发起太多请求
-    serversPaginated.items.forEach((server, index) => {
-      // 如果该服务器已经在测试中，则跳过
-      if (testingServersRef.current.has(server.id)) {
-        return;
+    serversPaginated.items.forEach(
+      (server: { id: number | string }, index: number) => {
+        // 如果该服务器已经在测试中，则跳过
+        if (testingServersRef.current.has(server.id)) {
+          return;
+        }
+
+        // 添加到测试中的集合
+        testingServersRef.current.add(server.id);
+
+        // 错开测试时间，每个服务器间隔200ms
+        setTimeout(() => {
+          // 测试连接
+          testConnectionMutation.mutate(server.id, {
+            onSettled: () => {
+              // 测试完成后从集合中移除
+              testingServersRef.current.delete(server.id);
+            },
+          });
+        }, index * 200);
       }
-
-      // 添加到测试中的集合
-      testingServersRef.current.add(server.id);
-
-      // 错开测试时间，每个服务器间隔200ms
-      setTimeout(() => {
-        // 测试连接
-        testConnectionMutation.mutate(server.id, {
-          onSettled: () => {
-            // 测试完成后从集合中移除
-            testingServersRef.current.delete(server.id);
-          },
-        });
-      }, index * 200);
-    });
+    );
   }, [
     autoRefresh,
     autoTestConnection,

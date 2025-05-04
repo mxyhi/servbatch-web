@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { Form } from "antd";
-import { TaskExecutionEntity } from "../../../api/executions";
+import { TaskExecutionEntity } from "../../../types/api";
 
 /**
  * 处理执行记录相关模态框的自定义Hook
  */
 export const useExecutionModals = () => {
   const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [cleanupByDateModalVisible, setCleanupByDateModalVisible] = useState(false);
-  const [cleanupByStatusModalVisible, setCleanupByStatusModalVisible] = useState(false);
-  const [selectedExecution, setSelectedExecution] = useState<TaskExecutionEntity | null>(null);
+  const [cleanupByDateModalVisible, setCleanupByDateModalVisible] =
+    useState(false);
+  const [cleanupByStatusModalVisible, setCleanupByStatusModalVisible] =
+    useState(false);
+  const [selectedExecution, setSelectedExecution] =
+    useState<TaskExecutionEntity | null>(null);
   const [dateForm] = Form.useForm();
   const [statusForm] = Form.useForm();
 

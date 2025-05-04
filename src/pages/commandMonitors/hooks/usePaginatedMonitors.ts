@@ -1,41 +1,42 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { TablePaginationConfig } from 'antd/es/table';
-import { commandMonitorsApi } from '../../../api/commandMonitors';
-import { DEFAULT_PAGE_SIZE } from '../../../constants';
-import { CommandMonitorEntity } from '../../../types/api';
-import usePagination from '../../../hooks/usePagination';
+import { useQuery } from "@tanstack/react-query";
+import { TablePaginationConfig } from "antd/es/table";
+import { commandMonitorsApi } from "../../../api/commandMonitors";
+import { DEFAULT_PAGE_SIZE } from "../../../constants";
+import usePagination from "../../../hooks/usePagination";
 
 /**
  * 分页获取命令监控的Hook
- * 
+ *
  * @param defaultFilters 默认过滤条件
  * @returns 分页数据和操作方法
  */
-export const usePaginatedMonitors = (defaultFilters: Record<string, any> = {}) => {
+export const usePaginatedMonitors = (
+  defaultFilters: Record<string, any> = {}
+) => {
   // 使用通用分页Hook
   const {
     paginationParams,
     setPaginationParams,
     resetPagination,
     handleTableChange,
-    tablePaginationConfig
+    tablePaginationConfig,
   } = usePagination({
     defaultFilters: {
       page: 1,
       pageSize: DEFAULT_PAGE_SIZE,
-      ...defaultFilters
-    }
+      ...defaultFilters,
+    },
   });
 
   // 获取分页数据
   const {
     data: paginatedData,
     isLoading,
-    refetch
+    refetch,
   } = useQuery({
-    queryKey: ['commandMonitors', 'paginated', paginationParams],
-    queryFn: () => commandMonitorsApi.getCommandMonitorsPaginated(paginationParams),
+    queryKey: ["commandMonitors", "paginated", paginationParams],
+    queryFn: () =>
+      commandMonitorsApi.getCommandMonitorsPaginated(paginationParams),
   });
 
   // 提取监控列表
@@ -58,7 +59,7 @@ export const usePaginatedMonitors = (defaultFilters: Record<string, any> = {}) =
     setPaginationParams,
     resetPagination,
     pagination,
-    handleTableChange
+    handleTableChange,
   };
 };
 

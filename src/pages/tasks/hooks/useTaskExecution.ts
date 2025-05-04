@@ -5,6 +5,7 @@ import { message } from "../../../utils/message";
 import { executionsApi } from "../../../api/executions";
 import { serversApi } from "../../../api/servers";
 import { useNavigate } from "react-router-dom";
+import { ID } from "../../../types/common";
 
 /**
  * 处理任务执行的自定义Hook
@@ -12,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 export const useTaskExecution = () => {
   const [executeForm] = Form.useForm();
   const [isExecuteModalVisible, setIsExecuteModalVisible] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<ID | null>(null);
   const [checkAll, setCheckAll] = useState(false);
   const [indeterminate, setIndeterminate] = useState(false);
   const queryClient = useQueryClient();
@@ -42,7 +43,7 @@ export const useTaskExecution = () => {
   });
 
   // 显示执行模态框
-  const showExecuteModal = (taskId: number) => {
+  const showExecuteModal = (taskId: ID) => {
     setSelectedTaskId(taskId);
     executeForm.resetFields();
     setCheckAll(false);
@@ -60,7 +61,7 @@ export const useTaskExecution = () => {
   };
 
   // 处理执行任务
-  const handleExecute = (values: { serverIds: number[] }) => {
+  const handleExecute = (values: { serverIds: ID[] }) => {
     if (selectedTaskId) {
       executeMutation.mutate({
         taskId: selectedTaskId,
@@ -71,7 +72,7 @@ export const useTaskExecution = () => {
   };
 
   // 处理查看历史
-  const handleViewHistory = (taskId: number) => {
+  const handleViewHistory = (taskId: ID) => {
     navigate(`/executions?taskId=${taskId}`);
   };
 
@@ -79,20 +80,21 @@ export const useTaskExecution = () => {
   const onCheckAllChange = (e: any) => {
     const checked = e.target.checked;
     const allServerIds = servers?.map((server) => server.id) || [];
-    
+
     executeForm.setFieldsValue({
       serverIds: checked ? allServerIds : [],
     });
-    
+
     setCheckAll(checked);
     setIndeterminate(false);
   };
 
   // 处理选择变化
-  const onServerSelectChange = (selectedServerIds: number[]) => {
+  const onServerSelectChange = (selectedServerIds: ID[]) => {
     const allServerIds = servers?.map((server) => server.id) || [];
     setIndeterminate(
-      selectedServerIds.length > 0 && selectedServerIds.length < allServerIds.length
+      selectedServerIds.length > 0 &&
+        selectedServerIds.length < allServerIds.length
     );
     setCheckAll(selectedServerIds.length === allServerIds.length);
   };

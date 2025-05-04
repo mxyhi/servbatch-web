@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { DEFAULT_REFRESH_INTERVAL } from "../constants";
 import { useMutations, useCustomOperations } from "./entity";
-import { EntityApi, EntityCRUDConfig, EntityCRUDResult } from "../types/entity";
+import { EntityCRUDConfig, EntityCRUDResult } from "../types/entity";
 import { ID, PaginatedResponse } from "../types/common";
 import usePagination from "./usePagination";
 
@@ -65,7 +65,7 @@ export function useEntityCRUD<T extends { id: ID }, C, U = Partial<C>>({
   refreshInterval = DEFAULT_REFRESH_INTERVAL,
   queryOptions = {},
   usePagination: enablePagination = false,
-  defaultPaginationParams = {},
+  defaultPaginationParams = { page: 1, pageSize: 10 },
   resetPageOnFilterChange = true,
 }: EntityCRUDConfig<T, C, U>): EntityCRUDResult<T, C, U> {
   const queryKeyArray = Array.isArray(queryKey) ? queryKey : [queryKey];
@@ -91,10 +91,13 @@ export function useEntityCRUD<T extends { id: ID }, C, U = Partial<C>>({
     queryKey: enablePagination
       ? [...queryKeyArray, paginationParams]
       : queryKeyArray,
-    queryFn:
-      enablePagination && api.getPaginated
-        ? () => api.getPaginated!(paginationParams)
-        : api.getAll,
+    queryFn: async () => {
+      if (enablePagination && api.getPaginated) {
+        return api.getPaginated(paginationParams);
+      } else {
+        return api.getAll();
+      }
+    },
     refetchInterval: autoRefresh ? refreshInterval : false,
     ...queryOptions,
   });

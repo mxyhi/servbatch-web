@@ -2,11 +2,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "../../../utils/message";
 import {
   tasksApi,
-  TaskEntity,
   CreateTaskDto,
   UpdateTaskDto,
   TaskPaginationParams,
 } from "../../../api/tasks";
+import { ID } from "../../../types/common";
 import { useState } from "react";
 import { DEFAULT_PAGE_SIZE } from "../../../constants";
 import { TablePaginationConfig } from "antd/es/table";
@@ -48,7 +48,7 @@ export const useTasks = () => {
 
   // 更新任务
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateTaskDto }) =>
+    mutationFn: ({ id, data }: { id: ID; data: UpdateTaskDto }) =>
       tasksApi.updateTask(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
@@ -82,13 +82,13 @@ export const useTasks = () => {
   };
 
   // 处理更新任务
-  const handleUpdate = (id: number, data: UpdateTaskDto) => {
+  const handleUpdate = (id: ID, data: UpdateTaskDto) => {
     updateMutation.mutate({ id, data });
     return updateMutation.isPending;
   };
 
   // 处理删除任务
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: ID) => {
     deleteMutation.mutate(id);
   };
 

@@ -1,14 +1,23 @@
 import api from "./axios";
 import { DEFAULT_PAGE_SIZE } from "../constants";
 import {
-  CreateCommandMonitorDto,
-  CommandMonitorEntity,
-  UpdateCommandMonitorDto,
-  CommandMonitorExecutionEntity,
-  CleanupByDateDto,
-  CleanupResultDto,
-  PaginationParams,
+  CreateCommandMonitorDto as CreateCommandMonitorDtoType,
+  CommandMonitorEntity as CommandMonitorEntityType,
+  UpdateCommandMonitorDto as UpdateCommandMonitorDtoType,
+  CommandMonitorExecutionEntity as CommandMonitorExecutionEntityType,
+  CleanupByDateDto as CleanupByDateDtoType,
+  CleanupResultDto as CleanupResultDtoType,
+  PaginationParams as PaginationParamsType,
 } from "../types/api"; // Import global types
+
+// Re-export types for use in components
+export type CreateCommandMonitorDto = CreateCommandMonitorDtoType;
+export type CommandMonitorEntity = CommandMonitorEntityType;
+export type UpdateCommandMonitorDto = UpdateCommandMonitorDtoType;
+export type CommandMonitorExecutionEntity = CommandMonitorExecutionEntityType;
+export type CleanupByDateDto = CleanupByDateDtoType;
+export type CleanupResultDto = CleanupResultDtoType;
+export type PaginationParams = PaginationParamsType;
 import { ID } from "../types/common"; // Import ID type
 
 // Define specific pagination params for command monitors including filters

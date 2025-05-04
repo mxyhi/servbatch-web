@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import * as echarts from "echarts";
-import { ProxyStatus } from "../../../api/dashboard";
+import { ProxyStatusInfo } from "../../../types/api";
 
 interface ProxyStatusChartProps {
-  proxyStatus: ProxyStatus[] | undefined;
+  proxyStatus: ProxyStatusInfo[] | undefined;
 }
 
 /**
@@ -17,7 +17,9 @@ const ProxyStatusChart: React.FC<ProxyStatusChartProps> = ({ proxyStatus }) => {
       const chart = echarts.init(chartRef.current);
 
       // 统计在线和离线代理数量
-      const onlineCount = proxyStatus.filter((p) => p.online).length;
+      const onlineCount = proxyStatus.filter(
+        (p) => p.status === "online"
+      ).length;
       const offlineCount = proxyStatus.length - onlineCount;
 
       const option = {

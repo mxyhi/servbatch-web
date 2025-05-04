@@ -3,7 +3,7 @@ import { Form, Input, Button, Card, Typography, Spin } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { LoginDto } from "../../api/auth";
+import { LoginDto } from "../../types/api";
 
 const { Title } = Typography;
 

@@ -10,14 +10,15 @@ import {
 import { TaskEntity } from "../../../api/tasks";
 import { ColumnsType } from "antd/es/table";
 import { TablePaginationConfig } from "antd/es/table";
+import { ID } from "../../../types/common";
 
 interface TaskTableProps {
   tasks: TaskEntity[] | undefined;
   isLoading: boolean;
   onEdit: (task: TaskEntity) => void;
-  onDelete: (id: number) => void;
-  onExecute: (id: number) => void;
-  onViewHistory: (id: number) => void;
+  onDelete: (id: ID) => void;
+  onExecute: (id: ID) => void;
+  onViewHistory: (id: ID) => void;
   pagination?: TablePaginationConfig;
   onChange?: (pagination: TablePaginationConfig) => void;
 }
@@ -36,7 +37,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
   onChange,
 }) => {
   // 处理删除确认
-  const handleDeleteConfirm = (id: number) => {
+  const handleDeleteConfirm = (id: ID) => {
     Modal.confirm({
       title: "确定要删除这个任务吗?",
       onOk: () => onDelete(id),

@@ -1,45 +1,46 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { TablePaginationConfig } from 'antd/es/table';
-import { serversApi } from '../../../api/servers';
-import { DEFAULT_PAGE_SIZE } from '../../../constants';
-import { ServerEntity, ServerStatus, ServerConnectionType } from '../../../types/api';
-import usePagination from '../../../hooks/usePagination';
+import { useQuery } from "@tanstack/react-query";
+import { TablePaginationConfig } from "antd/es/table";
+import { serversApi } from "../../../api/servers";
+import { DEFAULT_PAGE_SIZE } from "../../../constants";
+import { ServerStatus, ServerConnectionType } from "../../../types/api";
+import usePagination from "../../../hooks/usePagination";
 
 /**
  * 分页获取服务器数据的Hook
- * 
+ *
  * @param defaultFilters 默认过滤条件
  * @returns 分页数据和操作方法
  */
-export const usePaginatedServersData = (defaultFilters: {
-  name?: string;
-  host?: string;
-  status?: ServerStatus;
-  connectionType?: ServerConnectionType;
-} = {}) => {
+export const usePaginatedServersData = (
+  defaultFilters: {
+    name?: string;
+    host?: string;
+    status?: ServerStatus;
+    connectionType?: ServerConnectionType;
+  } = {}
+) => {
   // 使用通用分页Hook
   const {
     paginationParams,
     setPaginationParams,
     resetPagination,
     handleTableChange,
-    tablePaginationConfig
+    tablePaginationConfig,
   } = usePagination({
     defaultFilters: {
       page: 1,
       pageSize: DEFAULT_PAGE_SIZE,
-      ...defaultFilters
-    }
+      ...defaultFilters,
+    },
   });
 
   // 获取分页数据
   const {
     data: paginatedData,
     isLoading,
-    refetch
+    refetch,
   } = useQuery({
-    queryKey: ['servers', 'paginated', paginationParams],
+    queryKey: ["servers", "paginated", paginationParams],
     queryFn: () => serversApi.getServersPaginated(paginationParams),
   });
 
@@ -63,7 +64,7 @@ export const usePaginatedServersData = (defaultFilters: {
     setPaginationParams,
     resetPagination,
     pagination,
-    handleTableChange
+    handleTableChange,
   };
 };
 

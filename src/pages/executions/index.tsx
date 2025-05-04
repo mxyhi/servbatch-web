@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal } from "antd";
-import { CleanupByDateDto, CleanupByStatusDto } from "../../api/executions";
+import { CleanupByDateDto, CleanupByStatusDto } from "../../types/api";
 
 // 导入自定义Hook
 import { useExecutions } from "./hooks/useExecutions";
@@ -129,7 +129,7 @@ const Executions: React.FC = () => {
       </div>
 
       <ExecutionTable
-        executions={executions}
+        executions={executions?.items}
         isLoading={isLoading}
         onViewDetail={showDetailModal}
         onCancel={handleCancel}

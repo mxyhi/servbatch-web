@@ -1,8 +1,12 @@
 import React from "react";
 import { Select, Button, Dropdown } from "antd";
-import { ClearOutlined, CalendarOutlined, FilterOutlined, DeleteOutlined } from "@ant-design/icons";
-import { TaskEntity } from "../../../api/tasks";
-import { ServerEntity } from "../../../api/servers";
+import {
+  ClearOutlined,
+  CalendarOutlined,
+  FilterOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
+import { TaskEntity, ServerEntity } from "../../../types/api";
 
 interface ExecutionFiltersProps {
   tasks: TaskEntity[] | undefined;

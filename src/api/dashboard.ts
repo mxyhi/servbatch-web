@@ -1,13 +1,21 @@
 import api from "./axios";
 // Import necessary types from the global definitions
 import {
-  SystemSummary,
-  SystemSummaryWithProxies,
-  TaskExecutionEntity,
-  ServerStatusInfo, // Renamed in global types
-  ProxyStatusInfo, // Renamed in global types
-  TaskStats,
+  SystemSummary as SystemSummaryType,
+  SystemSummaryWithProxies as SystemSummaryWithProxiesType,
+  TaskExecutionEntity as TaskExecutionEntityType,
+  ServerStatusInfo as ServerStatusInfoType, // Renamed in global types
+  ProxyStatusInfo as ProxyStatusInfoType, // Renamed in global types
+  TaskStats as TaskStatsType,
 } from "../types/api";
+
+// Re-export types for use in components
+export type SystemSummary = SystemSummaryType;
+export type SystemSummaryWithProxies = SystemSummaryWithProxiesType;
+export type TaskExecutionEntity = TaskExecutionEntityType;
+export type ServerStatusInfo = ServerStatusInfoType;
+export type ProxyStatusInfo = ProxyStatusInfoType;
+export type TaskStats = TaskStatsType;
 
 export const dashboardApi = {
   // 获取系统摘要

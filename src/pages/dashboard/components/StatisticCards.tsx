@@ -8,7 +8,7 @@ import {
   CodeOutlined,
   ApiOutlined,
 } from "@ant-design/icons";
-import { SystemSummaryWithProxies } from "../../../api/dashboard";
+import { SystemSummaryWithProxies } from "../../../types/api";
 
 interface StatisticCardsProps {
   summary: SystemSummaryWithProxies | undefined;

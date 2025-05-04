@@ -7,17 +7,17 @@ import {
   StopOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import { CommandMonitorEntity } from "../../api/commandMonitors";
+import { CommandMonitorEntity } from "../../types/api";
 import { EntityTable } from "../../components/entity";
 
 interface CommandMonitorListProps {
   monitors?: CommandMonitorEntity[];
   isLoading: boolean;
   onEdit: (monitor: CommandMonitorEntity) => void;
-  onViewHistory: (monitorId: number) => void;
-  onEnable: (monitorId: number) => void;
-  onDisable: (monitorId: number) => void;
-  onDelete: (monitorId: number) => void;
+  onViewHistory: (monitorId: string | number) => void;
+  onEnable: (monitorId: string | number) => void;
+  onDisable: (monitorId: string | number) => void;
+  onDelete: (monitorId: string | number) => void;
   servers?: any[];
   // 分页相关
   pagination?: TablePaginationConfig;

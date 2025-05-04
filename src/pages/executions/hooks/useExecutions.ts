@@ -1,11 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "../../../utils/message";
-import {
-  executionsApi,
-  TaskExecutionEntity,
-  CleanupByDateDto,
-  CleanupByStatusDto,
-} from "../../../api/executions";
+import { executionsApi } from "../../../api/executions";
+import { CleanupByDateDto, CleanupByStatusDto } from "../../../types/api";
 
 interface UseExecutionsProps {
   taskId?: number | null;
@@ -15,7 +11,10 @@ interface UseExecutionsProps {
 /**
  * 处理执行记录的数据获取和操作的自定义Hook
  */
-export const useExecutions = ({ taskId, serverId }: UseExecutionsProps = {}) => {
+export const useExecutions = ({
+  taskId,
+  serverId,
+}: UseExecutionsProps = {}) => {
   const queryClient = useQueryClient();
 
   // 获取执行记录
@@ -23,11 +22,11 @@ export const useExecutions = ({ taskId, serverId }: UseExecutionsProps = {}) => 
     queryKey: ["executions", { taskId, serverId }],
     queryFn: async () => {
       if (taskId) {
-        return executionsApi.getExecutionsByTaskId(taskId);
+        return executionsApi.getExecutionsByTaskIdPaginated(taskId);
       } else if (serverId) {
-        return executionsApi.getExecutionsByServerId(serverId);
+        return executionsApi.getExecutionsByServerIdPaginated(serverId);
       } else {
-        return executionsApi.getAllExecutions();
+        return executionsApi.getExecutionsPaginated();
       }
     },
   });
@@ -117,12 +116,12 @@ export const useExecutions = ({ taskId, serverId }: UseExecutionsProps = {}) => 
   });
 
   // 处理删除
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string | number) => {
     deleteMutation.mutate(id);
   };
 
   // 处理取消
-  const handleCancel = (id: number) => {
+  const handleCancel = (id: string | number) => {
     cancelMutation.mutate(id);
   };
 

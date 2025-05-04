@@ -53,9 +53,9 @@ const ImportServersModal: React.FC<ImportServersModalProps> = ({
 
   const [importResult, setImportResult] =
     useState<ImportServersResultDto | null>(null);
-  const [importFormat, setImportFormat] = useState<ImportFormat>(
-    ImportFormat.JSON
-  );
+  const [importFormat, setImportFormat] = useState<
+    (typeof ImportFormat)[keyof typeof ImportFormat]
+  >(ImportFormat.JSON);
 
   // 监听导入结果
   useEffect(() => {
@@ -304,12 +304,20 @@ server-2,192.168.1.2,22,admin,,-----BEGIN RSA PRIVATE KEY-----...-----END RSA PR
             <div className="mt-2">
               <h4>失败详情:</h4>
               <ul>
-                {importResult.failureServers.map((failure, index) => (
-                  <li key={index}>
-                    {failure.server.name} ({failure.server.host}):{" "}
-                    {failure.reason}
-                  </li>
-                ))}
+                {importResult.failureServers.map(
+                  (
+                    failure: {
+                      server: { name: string; host: string };
+                      reason: string;
+                    },
+                    index: number
+                  ) => (
+                    <li key={index}>
+                      {failure.server.name} ({failure.server.host}):{" "}
+                      {failure.reason}
+                    </li>
+                  )
+                )}
               </ul>
             </div>
           )}

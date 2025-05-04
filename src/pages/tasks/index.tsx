@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { CreateTaskDto, UpdateTaskDto } from "../../api/tasks";
+import { ID } from "../../types/common";
 
 // 导入自定义Hook
 import { useTasks } from "./hooks/useTasks";
@@ -34,7 +35,7 @@ const Tasks: React.FC = () => {
   const {
     executeForm,
     isExecuteModalVisible,
-    selectedTaskId,
+
     servers,
     checkAll,
     indeterminate,
@@ -50,7 +51,7 @@ const Tasks: React.FC = () => {
   // 处理表单提交
   const handleSubmit = (values: CreateTaskDto | UpdateTaskDto) => {
     if (editingTask) {
-      return handleUpdate(editingTask.id, values as UpdateTaskDto);
+      return handleUpdate(editingTask.id as ID, values as UpdateTaskDto);
     } else {
       return handleCreate(values as CreateTaskDto);
     }

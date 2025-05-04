@@ -1,12 +1,19 @@
 import api from "./axios";
 import { DEFAULT_PAGE_SIZE } from "../constants";
 import {
-  CreateTaskDto,
-  TaskEntity,
-  UpdateTaskDto,
-  PaginationParams,
-  TaskExecutionEntity,
+  CreateTaskDto as CreateTaskDtoType,
+  TaskEntity as TaskEntityType,
+  UpdateTaskDto as UpdateTaskDtoType,
+  PaginationParams as PaginationParamsType,
+  TaskExecutionEntity as TaskExecutionEntityType,
 } from "../types/api"; // Import global types
+
+// Re-export types for use in components
+export type TaskEntity = TaskEntityType;
+export type CreateTaskDto = CreateTaskDtoType;
+export type UpdateTaskDto = UpdateTaskDtoType;
+export type TaskExecutionEntity = TaskExecutionEntityType;
+export type PaginationParams = PaginationParamsType;
 import { ID } from "../types/common"; // Import ID type
 
 // Define specific pagination params for tasks including filters
