@@ -2,6 +2,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "../../../utils/message";
 import { executionsApi } from "../../../api/executions";
 import { CleanupByDateDto, CleanupByStatusDto } from "../../../types/api";
+import { useState } from "react";
+import { DEFAULT_PAGE_SIZE } from "../../../constants";
+import { TablePaginationConfig } from "antd/es/table";
 
 interface UseExecutionsProps {
   taskId?: number | null;
@@ -17,16 +20,25 @@ export const useExecutions = ({
 }: UseExecutionsProps = {}) => {
   const queryClient = useQueryClient();
 
+  // 分页状态
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: DEFAULT_PAGE_SIZE,
+  });
+
   // 获取执行记录
   const { data: executions, isLoading } = useQuery({
-    queryKey: ["executions", { taskId, serverId }],
+    queryKey: ["executions", { taskId, serverId, pagination }],
     queryFn: async () => {
       if (taskId) {
-        return executionsApi.getExecutionsByTaskIdPaginated(taskId);
+        return executionsApi.getExecutionsByTaskIdPaginated(taskId, pagination);
       } else if (serverId) {
-        return executionsApi.getExecutionsByServerIdPaginated(serverId);
+        return executionsApi.getExecutionsByServerIdPaginated(
+          serverId,
+          pagination
+        );
       } else {
-        return executionsApi.getExecutionsPaginated();
+        return executionsApi.getExecutionsPaginated(pagination);
       }
     },
   });
@@ -145,6 +157,14 @@ export const useExecutions = ({
     cleanupByServerIdMutation.mutate(serverId);
   };
 
+  // 处理表格分页变化
+  const handleTableChange = (tablePagination: TablePaginationConfig) => {
+    setPagination({
+      page: tablePagination.current || 1,
+      pageSize: tablePagination.pageSize || DEFAULT_PAGE_SIZE,
+    });
+  };
+
   return {
     executions,
     isLoading,
@@ -160,5 +180,15 @@ export const useExecutions = ({
     cleanupByStatusMutation,
     cleanupByTaskIdMutation,
     cleanupByServerIdMutation,
+    // 分页相关
+    pagination: {
+      current: executions?.page || 1,
+      pageSize: executions?.pageSize || DEFAULT_PAGE_SIZE,
+      total: executions?.total || 0,
+      showSizeChanger: true,
+      showQuickJumper: true,
+      showTotal: (total: number) => `共 ${total} 条记录`,
+    },
+    handleTableChange,
   };
 };

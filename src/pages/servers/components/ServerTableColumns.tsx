@@ -10,6 +10,9 @@ import {
   ActionGroup,
 } from "../../../components/common";
 import { ID } from "../../../types/common";
+import { Button, Tooltip } from "antd";
+import { EyeOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 interface ServerTableColumnsProps {
   showModal: (server?: ServerEntity) => void;
@@ -24,6 +27,13 @@ export const getServerTableColumns = ({
   handleTestConnection,
   testConnectionMutation,
 }: ServerTableColumnsProps) => {
+  const navigate = useNavigate();
+
+  // 处理查看详情
+  const handleViewDetails = (id: ID) => {
+    navigate(`/servers/${id}`);
+  };
+
   const columns = [
     {
       title: "ID",
@@ -85,6 +95,14 @@ export const getServerTableColumns = ({
       key: "action",
       render: (_: unknown, record: ServerEntity) => (
         <ActionGroup>
+          <Tooltip title="查看详情">
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
+              onClick={() => handleViewDetails(record.id)}
+              size="small"
+            />
+          </Tooltip>
           <EditButton onClick={() => showModal(record)} />
           <TestConnectionButton
             onClick={() => handleTestConnection(record.id)}

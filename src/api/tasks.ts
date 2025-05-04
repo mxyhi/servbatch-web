@@ -52,15 +52,16 @@ export const tasksApi = {
   // 获取所有任务（兼容旧版本，内部使用分页API）
   getAllTasks: async (): Promise<TaskEntity[]> => {
     try {
-      // 使用分页API获取所有数据
+      // 使用默认页面大小，避免请求过大的数据量
       const response = await tasksApi.getTasksPaginated({
         page: 1,
-        pageSize: 1000, // 假设最多1000个任务
+        pageSize: DEFAULT_PAGE_SIZE, // 使用默认页面大小
       });
       return response.items;
     } catch (error) {
       console.error("获取所有任务失败:", error);
-      throw error;
+      // 返回空数组，避免错误传播
+      return [];
     }
   },
 

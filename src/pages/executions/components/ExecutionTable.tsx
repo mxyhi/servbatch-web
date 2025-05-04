@@ -3,6 +3,7 @@ import { Table, Button, Space, Popconfirm, Tag } from "antd";
 import { DeleteOutlined, StopOutlined, EyeOutlined } from "@ant-design/icons";
 import { TaskExecutionEntity } from "../../../types/api";
 import { ColumnsType } from "antd/es/table";
+import { TablePaginationConfig } from "antd/es/table";
 
 interface ExecutionTableProps {
   executions: TaskExecutionEntity[] | undefined;
@@ -10,6 +11,8 @@ interface ExecutionTableProps {
   onViewDetail: (execution: TaskExecutionEntity) => void;
   onCancel: (id: string | number) => void;
   onDelete: (id: string | number) => void;
+  pagination?: TablePaginationConfig;
+  onChange?: (pagination: TablePaginationConfig) => void;
 }
 
 /**
@@ -21,6 +24,8 @@ const ExecutionTable: React.FC<ExecutionTableProps> = ({
   onViewDetail,
   onCancel,
   onDelete,
+  pagination,
+  onChange,
 }) => {
   // 获取状态标签
   const getStatusTag = (status: string) => {
@@ -139,6 +144,8 @@ const ExecutionTable: React.FC<ExecutionTableProps> = ({
       rowKey="id"
       loading={isLoading}
       scroll={{ x: "max-content" }}
+      pagination={pagination}
+      onChange={onChange}
     />
   );
 };

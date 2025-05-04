@@ -9,6 +9,11 @@ import {
   PaginationParams as PaginationParamsType,
   ServerStatus,
   ServerConnectionType,
+  ServerDetails as ServerDetailsType,
+  ServerResources as ServerResourcesType,
+  ExecuteCommandRequest as ExecuteCommandRequestType,
+  ExecuteCommandResponse as ExecuteCommandResponseType,
+  TerminalSession as TerminalSessionType,
 } from "../types/api"; // Import global types
 
 // Re-export types for use in components
@@ -18,6 +23,11 @@ export type UpdateServerDto = UpdateServerDtoType;
 export type ImportServersDto = ImportServersDtoType;
 export type ImportServersResultDto = ImportServersResultDtoType;
 export type PaginationParams = PaginationParamsType;
+export type ServerDetails = ServerDetailsType;
+export type ServerResources = ServerResourcesType;
+export type ExecuteCommandRequest = ExecuteCommandRequestType;
+export type ExecuteCommandResponse = ExecuteCommandResponseType;
+export type TerminalSession = TerminalSessionType;
 import { ID } from "../types/common"; // Import ID type
 
 // Define specific pagination params for servers including filters
@@ -159,6 +169,44 @@ export const serversApi = {
     const response = await api.get("/servers", {
       params: queryParams,
     });
+    return response.data;
+  },
+
+  // 获取服务器详情
+  getServerDetails: async (id: ID): Promise<ServerDetails> => {
+    const response = await api.get(`/servers/${id}/details`);
+    return response.data;
+  },
+
+  // 获取服务器资源使用情况
+  getServerResources: async (id: ID): Promise<ServerResources> => {
+    const response = await api.get(`/servers/${id}/resources`);
+    return response.data;
+  },
+
+  // 在服务器上执行命令
+  executeCommand: async (
+    id: ID,
+    commandData: ExecuteCommandRequest
+  ): Promise<ExecuteCommandResponse> => {
+    const response = await api.post(`/servers/${id}/execute`, commandData);
+    return response.data;
+  },
+
+  // 创建终端会话
+  createTerminalSession: async (id: ID): Promise<TerminalSession> => {
+    const response = await api.post(`/servers/${id}/terminal/session`);
+    return response.data;
+  },
+
+  // 关闭终端会话
+  closeTerminalSession: async (
+    id: ID,
+    sessionId: string
+  ): Promise<{ success: boolean; message: string }> => {
+    const response = await api.delete(
+      `/servers/${id}/terminal/session/${sessionId}`
+    );
     return response.data;
   },
 };

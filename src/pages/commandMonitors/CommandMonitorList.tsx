@@ -1,12 +1,22 @@
 import React, { useCallback } from "react";
-import { Button, Space, Tag, Popconfirm, TablePaginationConfig } from "antd";
+import {
+  Button,
+  Space,
+  Tag,
+  Popconfirm,
+  TablePaginationConfig,
+  Dropdown,
+  Modal,
+} from "antd";
 import {
   EditOutlined,
   HistoryOutlined,
   CheckCircleOutlined,
   StopOutlined,
   DeleteOutlined,
+  MoreOutlined,
 } from "@ant-design/icons";
+import { EditButton, ActionGroup } from "../../components/common";
 import { CommandMonitorEntity } from "../../types/api";
 import { EntityTable } from "../../components/entity";
 
@@ -107,49 +117,67 @@ const CommandMonitorList: React.FC<CommandMonitorListProps> = ({
     {
       title: "操作",
       key: "action",
+      width: 150,
       render: (_: any, record: CommandMonitorEntity) => (
-        <Space size="middle">
-          <Button icon={<EditOutlined />} onClick={() => onEdit(record)}>
-            编辑
-          </Button>
-          <Button
-            icon={<HistoryOutlined />}
-            onClick={() => onViewHistory(record.id)}
+        <ActionGroup>
+          <EditButton onClick={() => onEdit(record)} size="small" />
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: "history",
+                  icon: <HistoryOutlined />,
+                  label: "历史",
+                  onClick: () => onViewHistory(record.id),
+                },
+                record.enabled
+                  ? {
+                      key: "disable",
+                      icon: <StopOutlined />,
+                      label: "禁用",
+                      onClick: () => {
+                        // 使用Modal.confirm替代Popconfirm，保持一致的用户体验
+                        Modal.confirm({
+                          title: "确定要禁用这个监控吗?",
+                          onOk: () => onDisable(record.id),
+                          okText: "是",
+                          cancelText: "否",
+                        });
+                      },
+                    }
+                  : {
+                      key: "enable",
+                      icon: <CheckCircleOutlined />,
+                      label: "启用",
+                      onClick: () => {
+                        Modal.confirm({
+                          title: "确定要启用这个监控吗?",
+                          onOk: () => onEnable(record.id),
+                          okText: "是",
+                          cancelText: "否",
+                        });
+                      },
+                    },
+                {
+                  key: "delete",
+                  icon: <DeleteOutlined />,
+                  label: "删除",
+                  danger: true,
+                  onClick: () => {
+                    Modal.confirm({
+                      title: "确定要删除这个监控吗?",
+                      onOk: () => onDelete(record.id),
+                      okText: "是",
+                      cancelText: "否",
+                    });
+                  },
+                },
+              ],
+            }}
           >
-            历史
-          </Button>
-          {record.enabled ? (
-            <Popconfirm
-              title="确定要禁用这个监控吗?"
-              onConfirm={() => onDisable(record.id)}
-              okText="是"
-              cancelText="否"
-            >
-              <Button icon={<StopOutlined />}>禁用</Button>
-            </Popconfirm>
-          ) : (
-            <Popconfirm
-              title="确定要启用这个监控吗?"
-              onConfirm={() => onEnable(record.id)}
-              okText="是"
-              cancelText="否"
-            >
-              <Button type="primary" icon={<CheckCircleOutlined />}>
-                启用
-              </Button>
-            </Popconfirm>
-          )}
-          <Popconfirm
-            title="确定要删除这个监控吗?"
-            onConfirm={() => onDelete(record.id)}
-            okText="是"
-            cancelText="否"
-          >
-            <Button danger icon={<DeleteOutlined />}>
-              删除
-            </Button>
-          </Popconfirm>
-        </Space>
+            <Button icon={<MoreOutlined />} size="small" />
+          </Dropdown>
+        </ActionGroup>
       ),
     },
   ];

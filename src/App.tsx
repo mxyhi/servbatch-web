@@ -16,6 +16,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 // 页面组件
 import Dashboard from "./pages/dashboard";
 import Servers from "./pages/servers";
+import ServerDetail from "./pages/servers/ServerDetail";
 import Tasks from "./pages/tasks";
 import Executions from "./pages/executions";
 import CommandMonitors from "./pages/commandMonitors";
@@ -76,6 +77,7 @@ function App() {
                     <Route path="/" element={<MainLayout />}>
                       <Route index element={<Dashboard />} />
                       <Route path="servers" element={<Servers />} />
+                      <Route path="servers/:id" element={<ServerDetail />} />
                       <Route path="tasks" element={<Tasks />} />
                       <Route path="executions" element={<Executions />} />
                       <Route

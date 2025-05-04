@@ -11,6 +11,9 @@ export * from "./pagination";
 // 导出服务器相关类型
 export * from "./server";
 
+// 导出服务器详情相关类型
+export * from "./server-details";
+
 // 导出任务相关类型
 export * from "./task";
 

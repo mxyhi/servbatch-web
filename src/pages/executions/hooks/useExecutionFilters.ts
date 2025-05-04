@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { tasksApi } from "../../../api/tasks";
 import { serversApi } from "../../../api/servers";
+import { DEFAULT_PAGE_SIZE } from "../../../constants";
 
 /**
  * 处理执行记录筛选的自定义Hook
@@ -24,17 +25,27 @@ export const useExecutionFilters = () => {
     }
   }, [searchParams]);
 
-  // 获取任务列表
-  const { data: tasks } = useQuery({
-    queryKey: ["tasks"],
-    queryFn: tasksApi.getAllTasks,
+  // 获取任务列表（使用分页API）
+  const { data: tasksPaginated } = useQuery({
+    queryKey: ["tasks", "paginated", { page: 1, pageSize: DEFAULT_PAGE_SIZE }],
+    queryFn: () =>
+      tasksApi.getTasksPaginated({ page: 1, pageSize: DEFAULT_PAGE_SIZE }),
   });
 
-  // 获取服务器列表
-  const { data: servers } = useQuery({
-    queryKey: ["servers"],
-    queryFn: serversApi.getAllServers,
+  // 获取服务器列表（使用分页API）
+  const { data: serversPaginated } = useQuery({
+    queryKey: [
+      "servers",
+      "paginated",
+      { page: 1, pageSize: DEFAULT_PAGE_SIZE },
+    ],
+    queryFn: () =>
+      serversApi.getServersPaginated({ page: 1, pageSize: DEFAULT_PAGE_SIZE }),
   });
+
+  // 提取任务和服务器列表
+  const tasks = tasksPaginated?.items || [];
+  const servers = serversPaginated?.items || [];
 
   // 处理任务筛选变化
   const handleTaskFilterChange = (value: number | null) => {

@@ -40,6 +40,8 @@ const Executions: React.FC = () => {
     handleCleanupByServerId,
     cleanupByDateMutation,
     cleanupByStatusMutation,
+    pagination,
+    handleTableChange,
   } = useExecutions({ taskId: filterTaskId, serverId: filterServerId });
 
   const {
@@ -134,6 +136,8 @@ const Executions: React.FC = () => {
         onViewDetail={showDetailModal}
         onCancel={handleCancel}
         onDelete={handleDelete}
+        pagination={pagination}
+        onChange={handleTableChange}
       />
 
       <ExecutionDetailModal
