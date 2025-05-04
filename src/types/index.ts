@@ -3,13 +3,16 @@
  */
 
 // 导出通用类型
-export * from './common';
+export * from "./common";
 
 // 导出API相关类型
-export * from './api';
+export * from "./api";
 
 // 导出表单相关类型
-export * from './form';
+export * from "./form";
 
 // 导出实体相关类型
-export * from './entity';
+export * from "./entity";
+
+// 导出工具类型
+export * from "./utils";
