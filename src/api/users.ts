@@ -6,7 +6,6 @@ import {
   UpdateUserDto,
   UserQueryDto, // Use the specific query DTO from global types
   PaginationParams,
-  UserRole, // Import UserRole type
 } from "../types/api"; // Import global types
 import { ID } from "../types/common"; // Import ID type
 
