@@ -33,7 +33,8 @@ export interface ServerStatusInfo {
 // 任务统计
 export interface TaskStats {
   totalTasks: number;
-  // Add more specific stats if defined by the endpoint logic
+  successfulExecutions: number;
+  failedExecutions: number;
 }
 
 // 代理状态信息

@@ -10,16 +10,27 @@ import {
   DatePicker,
   Space,
 } from "antd";
+import { commandMonitorsApi } from "../../api/commandMonitors";
 import {
   CommandMonitorEntity,
   CommandMonitorExecutionEntity,
   CleanupByDateDto,
-  commandMonitorsApi,
-} from "../../api/commandMonitors";
+} from "../../types/api";
+import { ID } from "../../types/common";
+
+// 扩展命令监控执行实体接口，添加组件中使用的属性
+interface ExtendedCommandMonitorExecutionEntity
+  extends CommandMonitorExecutionEntity {
+  executedAt?: string;
+  checkExitCode?: number;
+  executed?: boolean;
+  executeExitCode?: number;
+  checkOutput?: string;
+  executeOutput?: string;
+}
 import { DeleteOutlined, CalendarOutlined } from "@ant-design/icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { message } from "../../utils/message";
-import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
@@ -27,7 +38,7 @@ interface CommandMonitorHistoryProps {
   visible: boolean;
   onClose: () => void;
   monitor?: CommandMonitorEntity;
-  executions?: CommandMonitorExecutionEntity[];
+  executions?: ExtendedCommandMonitorExecutionEntity[];
   isLoading: boolean;
   onExecutionsChange?: () => void;
 }
@@ -45,12 +56,10 @@ const CommandMonitorHistory: React.FC<CommandMonitorHistoryProps> = ({
 }) => {
   const [cleanupDateModalVisible, setCleanupDateModalVisible] = useState(false);
   const [dateForm] = Form.useForm();
-  const queryClient = useQueryClient();
 
   // 清理所有执行历史
   const cleanupAllMutation = useMutation({
-    mutationFn: (id: number) =>
-      commandMonitorsApi.cleanupExecutionsByMonitorId(id),
+    mutationFn: (id: ID) => commandMonitorsApi.cleanupExecutionsByMonitorId(id),
     onSuccess: (result) => {
       message.success(`成功清理 ${result.deletedCount} 条执行记录`);
       if (onExecutionsChange) {
@@ -66,7 +75,7 @@ const CommandMonitorHistory: React.FC<CommandMonitorHistoryProps> = ({
 
   // 按日期范围清理
   const cleanupByDateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CleanupByDateDto }) =>
+    mutationFn: ({ id, data }: { id: ID; data: CleanupByDateDto }) =>
       commandMonitorsApi.cleanupExecutionsByDate(id, data),
     onSuccess: (result) => {
       message.success(`成功清理 ${result.deletedCount} 条执行记录`);
@@ -208,7 +217,9 @@ const CommandMonitorHistory: React.FC<CommandMonitorHistoryProps> = ({
             rowKey="id"
             loading={isLoading}
             expandable={{
-              expandedRowRender: (record: CommandMonitorExecutionEntity) => (
+              expandedRowRender: (
+                record: ExtendedCommandMonitorExecutionEntity
+              ) => (
                 <div className="p-4">
                   <div className="mb-4">
                     <Text strong>检查命令输出:</Text>

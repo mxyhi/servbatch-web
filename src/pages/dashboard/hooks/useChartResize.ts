@@ -5,7 +5,9 @@ import * as echarts from "echarts";
  * 处理图表大小调整的自定义Hook
  * @param chartRefs 图表DOM引用数组
  */
-export const useChartResize = (chartRefs: RefObject<HTMLDivElement>[]) => {
+export const useChartResize = (
+  chartRefs: RefObject<HTMLDivElement | null>[]
+) => {
   useEffect(() => {
     const handleResize = () => {
       chartRefs.forEach((ref) => {
