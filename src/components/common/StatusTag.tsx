@@ -7,13 +7,14 @@ import {
 } from "@ant-design/icons";
 import {
   ServerStatus,
-  ExecutionStatus,
+  ServerStatusValue,
+  ExecutionStatusValue,
   STATUS_TAG_CONFIG,
   EXECUTION_STATUS_TAG_CONFIG,
 } from "../../constants";
 
 interface ServerStatusTagProps {
-  status: ServerStatus;
+  status: ServerStatusValue;
 }
 
 const ServerStatusTagComponent: React.FC<ServerStatusTagProps> = ({
@@ -38,7 +39,7 @@ const ServerStatusTagComponent: React.FC<ServerStatusTagProps> = ({
 };
 
 interface ExecutionStatusTagProps {
-  status: ExecutionStatus;
+  status: ExecutionStatusValue;
 }
 
 const ExecutionStatusTagComponent: React.FC<ExecutionStatusTagProps> = ({
