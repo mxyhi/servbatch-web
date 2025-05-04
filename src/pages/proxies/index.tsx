@@ -3,12 +3,9 @@ import { Form, Input, Tag, Space, Button } from "antd";
 import { CloudServerOutlined, ApiOutlined } from "@ant-design/icons";
 import { useEntityCRUD } from "../../hooks/useEntityCRUD";
 import { EntityPage, EntityFormItem } from "../../components/entity";
-import {
-  proxiesApi,
-  ProxyEntity,
-  CreateProxyDto,
-  UpdateProxyDto,
-} from "../../api/proxies";
+import { proxiesApi } from "../../api/proxies";
+import { ProxyEntity, CreateProxyDto, UpdateProxyDto } from "../../types/api"; // Update import path
+import { DEFAULT_PAGE_SIZE } from "../../constants";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
 
@@ -18,22 +15,28 @@ import { zhCN } from "date-fns/locale";
 const Proxies: React.FC = () => {
   const [autoRefresh, setAutoRefresh] = useState(false);
 
-  // 使用通用实体CRUD Hook
+  // 使用通用实体CRUD Hook（启用分页）
   const {
     data: proxies,
     isLoading,
-    refetch, // 添加refetch函数
+    refetch,
     createMutation,
     updateMutation,
     deleteMutation,
+    tablePaginationConfig,
+    handleTableChange,
   } = useEntityCRUD<ProxyEntity, CreateProxyDto, UpdateProxyDto>({
     api: {
-      getAll: proxiesApi.getAllProxies,
-      getById: (id: number) => proxiesApi.getProxy(id.toString()),
+      // 使用空的getAll实现（不会被调用，因为启用了分页）
+      getAll: async () => [],
+      // 添加分页API
+      getPaginated: proxiesApi.getProxiesPaginated,
+      // 确保ID传递给API是字符串
+      getById: (id: string | number) => proxiesApi.getProxy(String(id)),
       create: proxiesApi.createProxy,
-      update: (id: number, data: UpdateProxyDto) =>
-        proxiesApi.updateProxy(id.toString(), data),
-      delete: (id: number) => proxiesApi.deleteProxy(id.toString()),
+      update: (id: string | number, data: UpdateProxyDto) =>
+        proxiesApi.updateProxy(String(id), data),
+      delete: (id: string | number) => proxiesApi.deleteProxy(String(id)),
     },
     queryKey: "proxies",
     autoRefresh,
@@ -42,6 +45,13 @@ const Proxies: React.FC = () => {
       createSuccess: "代理创建成功",
       updateSuccess: "代理更新成功",
       deleteSuccess: "代理删除成功",
+    },
+    // 启用分页
+    usePagination: true,
+    // 默认分页参数
+    defaultPaginationParams: {
+      page: 1,
+      pageSize: DEFAULT_PAGE_SIZE,
     },
   });
 
@@ -79,7 +89,11 @@ const Proxies: React.FC = () => {
   };
 
   // 处理更新代理
-  const handleUpdateProxy = async (id: number, values: UpdateProxyDto) => {
+  const handleUpdateProxy = async (
+    id: string | number,
+    values: UpdateProxyDto
+  ) => {
+    // Accept string or number
     await updateMutation.mutateAsync({ id, data: values });
   };
 
@@ -151,11 +165,15 @@ const Proxies: React.FC = () => {
       enableAutoRefresh
       defaultAutoRefresh={autoRefresh}
       refreshInterval={10000}
-      onRefresh={() => refetch()} // 调用refetch函数刷新数据
-      onAutoRefreshChange={setAutoRefresh} // 添加自动刷新状态变化回调
+      onRefresh={() => refetch()}
+      onAutoRefreshChange={setAutoRefresh}
       tableProps={{
         columns,
         rowKey: "id",
+        // 添加分页配置
+        pagination: tablePaginationConfig,
+        // 添加表格变化处理函数
+        onChange: handleTableChange,
       }}
       formProps={{
         items: formItems,

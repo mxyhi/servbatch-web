@@ -18,8 +18,15 @@ import ExecuteTaskModal from "./components/ExecuteTaskModal";
  */
 const Tasks: React.FC = () => {
   // 使用自定义Hook
-  const { tasks, isLoading, handleCreate, handleUpdate, handleDelete } =
-    useTasks();
+  const {
+    tasks,
+    isLoading,
+    handleCreate,
+    handleUpdate,
+    handleDelete,
+    pagination,
+    handleTableChange,
+  } = useTasks();
 
   const { form, isModalVisible, editingTask, showModal, handleCancel } =
     useTaskForm();
@@ -69,6 +76,8 @@ const Tasks: React.FC = () => {
         onDelete={handleDelete}
         onExecute={showExecuteModal}
         onViewHistory={handleViewHistory}
+        pagination={pagination}
+        onChange={handleTableChange}
       />
 
       <TaskFormModal

@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { Button, Space, Tag, Popconfirm } from "antd";
+import { Button, Space, Tag, Popconfirm, TablePaginationConfig } from "antd";
 import {
   EditOutlined,
   HistoryOutlined,
@@ -19,6 +19,13 @@ interface CommandMonitorListProps {
   onDisable: (monitorId: number) => void;
   onDelete: (monitorId: number) => void;
   servers?: any[];
+  // 分页相关
+  pagination?: TablePaginationConfig;
+  onChange?: (
+    pagination: TablePaginationConfig,
+    filters: any,
+    sorter: any
+  ) => void;
 }
 
 /**
@@ -33,6 +40,8 @@ const CommandMonitorList: React.FC<CommandMonitorListProps> = ({
   onDisable,
   onDelete,
   servers = [],
+  pagination,
+  onChange,
 }) => {
   // 获取服务器名称
   const getServerName = useCallback(
@@ -152,6 +161,8 @@ const CommandMonitorList: React.FC<CommandMonitorListProps> = ({
       columns={columns}
       rowKey="id"
       scroll={{ x: "max-content" }}
+      pagination={pagination}
+      onChange={onChange}
     />
   );
 };

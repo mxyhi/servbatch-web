@@ -1,56 +1,26 @@
 import api from "./axios";
-import { TaskExecutionEntity } from "./executions";
-
-export interface SystemSummary {
-  totalServers: number;
-  onlineServers: number;
-  totalTasks: number;
-  executionsToday: number;
-  successRate: number;
-}
-
-// 扩展SystemSummary接口，添加代理相关信息
-export interface SystemSummaryWithProxies extends SystemSummary {
-  totalProxies: number;
-  onlineProxies: number;
-}
-
-export interface ServerStatus {
-  id: number;
-  name: string;
-  status: "online" | "offline" | "unknown";
-  lastChecked?: string;
-}
-
-// 代理状态接口
-export interface ProxyStatus {
-  id: string;
-  name: string;
-  status: "online" | "offline";
-  lastSeen?: string;
-}
-
-export interface TaskStats {
-  totalExecutions: number;
-  successfulExecutions: number;
-  failedExecutions: number;
-  mostExecutedTasks: {
-    taskId: number;
-    taskName: string;
-    executionCount: number;
-  }[];
-}
+// Import necessary types from the global definitions
+import {
+  SystemSummary,
+  SystemSummaryWithProxies,
+  TaskExecutionEntity,
+  ServerStatusInfo, // Renamed in global types
+  ProxyStatusInfo, // Renamed in global types
+  TaskStats,
+} from "../types/api";
 
 export const dashboardApi = {
   // 获取系统摘要
   getSummary: async (): Promise<SystemSummary> => {
     const response = await api.get("/dashboard/summary");
+    // Assuming response.data matches the SystemSummary structure from OpenAPI
     return response.data;
   },
 
   // 获取包含代理信息的系统摘要
   getSummaryWithProxies: async (): Promise<SystemSummaryWithProxies> => {
     const response = await api.get("/dashboard/summary-with-proxies");
+    // Assuming response.data matches the SystemSummaryWithProxies structure
     return response.data;
   },
 
@@ -58,6 +28,7 @@ export const dashboardApi = {
   getRecentExecutions: async (
     limit?: number
   ): Promise<TaskExecutionEntity[]> => {
+    // Return type confirmed from OpenAPI
     const url = limit
       ? `/dashboard/recent-executions?limit=${limit}`
       : "/dashboard/recent-executions";
@@ -66,20 +37,25 @@ export const dashboardApi = {
   },
 
   // 获取所有服务器状态
-  getServerStatus: async (): Promise<ServerStatus[]> => {
+  getServerStatus: async (): Promise<ServerStatusInfo[]> => {
+    // Use ServerStatusInfo
     const response = await api.get("/dashboard/server-status");
+    // Assuming response.data is an array matching ServerStatusInfo
     return response.data;
   },
 
   // 获取所有代理状态
-  getProxyStatus: async (): Promise<ProxyStatus[]> => {
+  getProxyStatus: async (): Promise<ProxyStatusInfo[]> => {
+    // Use ProxyStatusInfo
     const response = await api.get("/dashboard/proxy-status");
+    // Assuming response.data is an array matching ProxyStatusInfo
     return response.data;
   },
 
   // 获取任务统计信息
   getTaskStats: async (): Promise<TaskStats> => {
     const response = await api.get("/dashboard/task-stats");
+    // Assuming response.data matches the TaskStats structure
     return response.data;
   },
 };

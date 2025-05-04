@@ -1,13 +1,13 @@
 /**
  * 实体相关类型定义
  */
-import { ReactNode } from 'react';
-import { FormInstance } from 'antd/es/form';
-import { TablePaginationConfig } from 'antd/es/table';
-import { UseMutationResult } from '@tanstack/react-query';
-import { BaseEntity } from './api';
-import { FormItem, FormLayout } from './form';
-import { ID } from './common';
+import { ReactNode } from "react";
+import { FormInstance } from "antd/es/form";
+import { TablePaginationConfig } from "antd/es/table";
+import { UseMutationResult } from "@tanstack/react-query";
+import { BaseEntity } from "./api";
+import { FormItem, FormLayout } from "./form";
+import { ID, PaginationParams, PaginatedResponse } from "./common";
 
 // 实体表格配置
 export interface EntityTableConfig<T> {
@@ -39,6 +39,11 @@ export interface EntityOperations<T, C, U> {
 export interface EntityApi<T, C, U> {
   // 获取所有实体
   getAll: () => Promise<T[]>;
+
+  // 获取分页实体
+  getPaginated?: (
+    params?: PaginationParams & Record<string, any>
+  ) => Promise<PaginatedResponse<T>>;
 
   // 获取单个实体
   getById?: (id: ID) => Promise<T>;
@@ -104,6 +109,15 @@ export interface EntityCRUDConfig<T, C, U> {
 
   // 查询选项
   queryOptions?: Record<string, unknown>;
+
+  // 是否使用分页
+  usePagination?: boolean;
+
+  // 默认分页参数
+  defaultPaginationParams?: PaginationParams & Record<string, any>;
+
+  // 是否在过滤条件变化时重置页码
+  resetPageOnFilterChange?: boolean;
 }
 
 // 实体CRUD Hook返回值
@@ -113,13 +127,30 @@ export interface EntityCRUDResult<T, C, U> {
   isLoading: boolean;
   refetch: () => Promise<unknown>;
 
+  // 分页数据（如果启用分页）
+  paginatedData?: PaginatedResponse<T>;
+  paginationParams?: PaginationParams & Record<string, any>;
+  setPaginationParams?: (
+    params: Partial<PaginationParams & Record<string, any>>
+  ) => void;
+  resetPagination?: () => void;
+  tablePaginationConfig?: TablePaginationConfig;
+  handleTableChange?: (
+    pagination: TablePaginationConfig,
+    filters?: Record<string, any>,
+    sorter?: any
+  ) => void;
+
   // 基本CRUD操作
   createMutation: UseMutationResult<T, Error, C, unknown>;
   updateMutation: UseMutationResult<T, Error, { id: ID; data: U }, unknown>;
   deleteMutation: UseMutationResult<unknown, Error, ID, unknown>;
 
   // 自定义操作
-  customMutations: Record<string, UseMutationResult<unknown, Error, unknown, unknown>>;
+  customMutations: Record<
+    string,
+    UseMutationResult<unknown, Error, unknown, unknown>
+  >;
 
   // 获取单个实体
   getById: (id: ID) => T | undefined;

@@ -9,6 +9,7 @@ import {
 } from "@ant-design/icons";
 import { TaskEntity } from "../../../api/tasks";
 import { ColumnsType } from "antd/es/table";
+import { TablePaginationConfig } from "antd/es/table";
 
 interface TaskTableProps {
   tasks: TaskEntity[] | undefined;
@@ -17,6 +18,8 @@ interface TaskTableProps {
   onDelete: (id: number) => void;
   onExecute: (id: number) => void;
   onViewHistory: (id: number) => void;
+  pagination?: TablePaginationConfig;
+  onChange?: (pagination: TablePaginationConfig) => void;
 }
 
 /**
@@ -29,6 +32,8 @@ const TaskTable: React.FC<TaskTableProps> = ({
   onDelete,
   onExecute,
   onViewHistory,
+  pagination,
+  onChange,
 }) => {
   // 处理删除确认
   const handleDeleteConfirm = (id: number) => {
@@ -133,6 +138,8 @@ const TaskTable: React.FC<TaskTableProps> = ({
       rowKey="id"
       loading={isLoading}
       scroll={{ x: "max-content" }}
+      pagination={pagination}
+      onChange={onChange}
     />
   );
 };

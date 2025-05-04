@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import {
   serversApi,
   ServerEntity,
@@ -10,6 +9,7 @@ import { DEFAULT_REFRESH_INTERVAL } from "../../../constants";
 import { useCrudOperations } from "../../../hooks/useCrudOperations";
 import { message } from "../../../utils/message";
 import { useEffect, useRef } from "react";
+import usePaginatedServersData from "./usePaginatedServersData";
 
 /**
  * 服务器管理Hook
@@ -26,16 +26,8 @@ export const useServers = (
   refreshInterval: number = DEFAULT_REFRESH_INTERVAL,
   autoTestConnection: boolean = true
 ) => {
-  // 获取服务器列表
-  const {
-    data: servers,
-    isLoading,
-    refetch,
-  } = useQuery<ServerEntity[]>({
-    queryKey: ["servers"],
-    queryFn: serversApi.getAllServers,
-    refetchInterval: autoRefresh ? refreshInterval : false,
-  });
+  // 使用分页Hook获取服务器数据
+  const { servers, isLoading, refetch } = usePaginatedServersData();
 
   // 使用通用CRUD操作Hook
   const { createMutation, updateMutation, deleteMutation } = useCrudOperations<

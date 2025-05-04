@@ -4,10 +4,13 @@ import {
   ServerEntity,
   UpdateServerDto,
   CreateServerDto,
-} from "../../../api/servers";
-import { ProxyEntity } from "../../../api/proxies";
+  ProxyEntity, // Import ProxyEntity from global types
+} from "../../../types/api"; // Update import path
+// Remove ProxyEntity import from ../../../api/proxies
 import { UseMutationResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
+import { ID } from "../../../types/common"; // Import ID type
+import { DEFAULT_PAGE_SIZE } from "../../../constants";
 import { FormModal } from "../../../components/common";
 import { proxiesApi } from "../../../api/proxies";
 
@@ -25,7 +28,7 @@ interface ServerFormModalProps {
   updateMutation: UseMutationResult<
     ServerEntity,
     Error,
-    { id: number; data: UpdateServerDto },
+    { id: ID; data: UpdateServerDto }, // Change id type to ID
     unknown
   >;
   form?: FormInstance;
@@ -47,10 +50,13 @@ const ServerFormModal: React.FC<ServerFormModalProps> = ({
   // 获取当前连接类型
   const connectionType = Form.useWatch("connectionType", form) || "direct";
 
-  // 获取代理列表
+  // 获取代理列表 (使用分页接口)
   const { data: proxies = [] } = useQuery({
-    queryKey: ["proxies"],
-    queryFn: proxiesApi.getAllProxies,
+    // Keep default empty array
+    queryKey: ["proxies", { page: 1, pageSize: DEFAULT_PAGE_SIZE }], // 使用默认页面大小
+    queryFn: () =>
+      proxiesApi.getProxiesPaginated({ page: 1, pageSize: DEFAULT_PAGE_SIZE }), // 使用默认页面大小
+    select: (data) => data.items, // Select only the items array
     // 只有在代理连接模式下才获取代理列表
     enabled: connectionType === "proxy" && isModalVisible,
   });
@@ -75,8 +81,12 @@ const ServerFormModal: React.FC<ServerFormModalProps> = ({
         username: editingServer.username,
         connectionType: editingServer.connectionType,
         proxyId: editingServer.proxyId,
-        privateKey: editingServer.privateKey,
+        // privateKey is not available on ServerEntity for reading
+        // The form field will be populated only if user enters it or via password manager etc.
+        // Clear it explicitly if needed when editing, or rely on form.resetFields on cancel/close
       });
+      // If password/privateKey needs special handling on edit (e.g., showing placeholder instead of value),
+      // add logic here or within the form items themselves.
     }
   }, [editingServer, form]);
 

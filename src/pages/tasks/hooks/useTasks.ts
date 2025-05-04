@@ -5,7 +5,11 @@ import {
   TaskEntity,
   CreateTaskDto,
   UpdateTaskDto,
+  TaskPaginationParams,
 } from "../../../api/tasks";
+import { useState } from "react";
+import { DEFAULT_PAGE_SIZE } from "../../../constants";
+import { TablePaginationConfig } from "antd/es/table";
 
 /**
  * 处理任务数据获取和操作的自定义Hook
@@ -13,11 +17,20 @@ import {
 export const useTasks = () => {
   const queryClient = useQueryClient();
 
-  // 获取任务列表
-  const { data: tasks, isLoading } = useQuery({
-    queryKey: ["tasks"],
-    queryFn: tasksApi.getAllTasks,
+  // 分页状态
+  const [pagination, setPagination] = useState<TaskPaginationParams>({
+    page: 1,
+    pageSize: DEFAULT_PAGE_SIZE,
   });
+
+  // 获取任务列表（分页）
+  const { data: tasksPaginated, isLoading } = useQuery({
+    queryKey: ["tasks", "paginated", pagination],
+    queryFn: () => tasksApi.getTasksPaginated(pagination),
+  });
+
+  // 提取任务列表
+  const tasks = tasksPaginated?.items || [];
 
   // 创建任务
   const createMutation = useMutation({
@@ -79,6 +92,15 @@ export const useTasks = () => {
     deleteMutation.mutate(id);
   };
 
+  // 处理表格分页变化
+  const handleTableChange = (tablePagination: TablePaginationConfig) => {
+    setPagination({
+      ...pagination,
+      page: tablePagination.current || 1,
+      pageSize: tablePagination.pageSize || DEFAULT_PAGE_SIZE,
+    });
+  };
+
   return {
     tasks,
     isLoading,
@@ -88,5 +110,15 @@ export const useTasks = () => {
     createMutation,
     updateMutation,
     deleteMutation,
+    // 分页相关
+    pagination: {
+      current: tasksPaginated?.page || 1,
+      pageSize: tasksPaginated?.pageSize || DEFAULT_PAGE_SIZE,
+      total: tasksPaginated?.total || 0,
+      showSizeChanger: true,
+      showQuickJumper: true,
+      showTotal: (total: number) => `共 ${total} 条记录`,
+    },
+    handleTableChange,
   };
 };

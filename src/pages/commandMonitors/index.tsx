@@ -3,15 +3,16 @@ import { Button, Form, Typography, Modal } from "antd";
 import { message } from "../../utils/message";
 import { PlusOutlined } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  commandMonitorsApi,
-  CommandMonitorEntity,
-} from "../../api/commandMonitors";
-import { serversApi } from "../../api/servers";
+import { commandMonitorsApi } from "../../api/commandMonitors";
+import { CommandMonitorEntity, UpdateCommandMonitorDto } from "../../types/api";
+import { ID } from "../../types/common";
+import { DEFAULT_PAGE_SIZE } from "../../constants";
 import { useModalForm } from "../../hooks/useModalForm";
 import CommandMonitorList from "./CommandMonitorList";
 import CommandMonitorForm from "./CommandMonitorForm";
 import CommandMonitorHistory from "./CommandMonitorHistory";
+import usePaginatedMonitors from "./hooks/usePaginatedMonitors";
+import usePaginatedServers from "./hooks/usePaginatedServers";
 
 /**
  * 命令监控页面组件
@@ -40,25 +41,37 @@ const CommandMonitors: React.FC = () => {
     initialValues: { enabled: true },
   });
 
-  // 获取所有命令监控
-  const { data: monitors, isLoading } = useQuery({
-    queryKey: ["commandMonitors"],
-    queryFn: commandMonitorsApi.getAllCommandMonitors,
-  });
+  // 使用分页Hook获取命令监控
+  const {
+    monitors,
+    isLoading,
+    pagination,
+    handleTableChange,
+    refetch: refetchMonitors,
+  } = usePaginatedMonitors();
 
-  // 获取所有服务器
-  const { data: servers } = useQuery({
-    queryKey: ["servers"],
-    queryFn: serversApi.getAllServers,
-  });
+  // 使用分页Hook获取服务器
+  const { servers } = usePaginatedServers();
 
   // 获取命令监控执行历史
   const { data: monitorExecutions, isLoading: executionsLoading } = useQuery({
     queryKey: ["commandMonitorExecutions", selectedMonitorId],
-    queryFn: () =>
-      selectedMonitorId
-        ? commandMonitorsApi.getCommandMonitorExecutions(selectedMonitorId)
-        : Promise.resolve([]),
+    queryFn: () => {
+      if (!selectedMonitorId)
+        return Promise.resolve({
+          items: [],
+          total: 0,
+          page: 1,
+          pageSize: 10,
+          totalPages: 0,
+        }); // Return empty pagination structure
+      // 使用默认页面大小，考虑稍后添加分页控件
+      return commandMonitorsApi.getCommandMonitorExecutionsPaginated(
+        selectedMonitorId,
+        { page: 1, pageSize: DEFAULT_PAGE_SIZE }
+      );
+    },
+    select: (data) => data.items, // Select only the items array
     enabled: !!selectedMonitorId,
   });
 
@@ -66,20 +79,30 @@ const CommandMonitors: React.FC = () => {
   const createMutation = useMutation({
     mutationFn: commandMonitorsApi.createCommandMonitor,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["commandMonitors"] });
+      // 使用更精确的查询键使缓存失效
+      queryClient.invalidateQueries({
+        queryKey: ["commandMonitors", "paginated"],
+      });
       message.success("命令监控创建成功");
       hideModal();
+      // 刷新数据
+      refetchMonitors();
     },
   });
 
   // 更新命令监控
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) =>
+    mutationFn: ({ id, data }: { id: ID; data: UpdateCommandMonitorDto }) =>
       commandMonitorsApi.updateCommandMonitor(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["commandMonitors"] });
+      // 使用更精确的查询键使缓存失效
+      queryClient.invalidateQueries({
+        queryKey: ["commandMonitors", "paginated"],
+      });
       message.success("命令监控更新成功");
       hideModal();
+      // 刷新数据
+      refetchMonitors();
     },
   });
 
@@ -87,8 +110,13 @@ const CommandMonitors: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: commandMonitorsApi.deleteCommandMonitor,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["commandMonitors"] });
+      // 使用更精确的查询键使缓存失效
+      queryClient.invalidateQueries({
+        queryKey: ["commandMonitors", "paginated"],
+      });
       message.success("命令监控删除成功");
+      // 刷新数据
+      refetchMonitors();
     },
   });
 
@@ -96,8 +124,13 @@ const CommandMonitors: React.FC = () => {
   const enableMutation = useMutation({
     mutationFn: commandMonitorsApi.enableCommandMonitor,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["commandMonitors"] });
+      // 使用更精确的查询键使缓存失效
+      queryClient.invalidateQueries({
+        queryKey: ["commandMonitors", "paginated"],
+      });
       message.success("命令监控已启用");
+      // 刷新数据
+      refetchMonitors();
     },
   });
 
@@ -105,8 +138,13 @@ const CommandMonitors: React.FC = () => {
   const disableMutation = useMutation({
     mutationFn: commandMonitorsApi.disableCommandMonitor,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["commandMonitors"] });
+      // 使用更精确的查询键使缓存失效
+      queryClient.invalidateQueries({
+        queryKey: ["commandMonitors", "paginated"],
+      });
       message.success("命令监控已禁用");
+      // 刷新数据
+      refetchMonitors();
     },
   });
 
@@ -155,7 +193,7 @@ const CommandMonitors: React.FC = () => {
         </Button>
       </div>
 
-      {/* 监控列表 */}
+      {/* 监控列表（带分页） */}
       <CommandMonitorList
         monitors={monitors}
         isLoading={isLoading}
@@ -165,6 +203,8 @@ const CommandMonitors: React.FC = () => {
         onEnable={enableMutation.mutate}
         onDisable={disableMutation.mutate}
         onDelete={deleteMutation.mutate}
+        pagination={pagination}
+        onChange={handleTableChange}
       />
 
       {/* 创建/编辑模态框 */}
