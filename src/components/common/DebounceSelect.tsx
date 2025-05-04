@@ -3,30 +3,40 @@ import { Select, Spin, Checkbox, Divider } from "antd";
 import type { SelectProps } from "antd";
 import debounce from "lodash/debounce";
 
-export interface DebounceSelectProps<ValueType = any>
-  extends Omit<SelectProps<ValueType | ValueType[]>, "options" | "children"> {
+export interface DebounceSelectProps<
+  OptionType extends {
+    // 重命名 ValueType 为 OptionType
+    key?: string;
+    label: React.ReactNode;
+    value: string | number;
+  } = any,
+  ValuePropType = OptionType["value"] | OptionType["value"][] // 定义 Select 的 value prop 类型
+> extends Omit<SelectProps<ValuePropType, OptionType>, "options" | "children"> {
+  // 更新 SelectProps 泛型
   fetchOptions: (
     search: string,
     page: number
   ) => Promise<{
-    data: ValueType[];
+    data: OptionType[]; // 更新类型
     total: number;
   }>;
   debounceTimeout?: number;
   pageSize?: number;
   showSelectAll?: boolean; // 是否显示全选选项
-  fetchAllOptions?: () => Promise<ValueType[]>; // 获取所有选项的方法，用于全选功能
+  fetchAllOptions?: () => Promise<OptionType[]>; // 更新类型
 }
 
 /**
  * 带有防抖搜索和分页加载功能的Select组件
  */
 function DebounceSelect<
-  ValueType extends {
+  OptionType extends {
+    // 更新泛型名称
     key?: string;
     label: React.ReactNode;
     value: string | number;
-  } = any
+  } = any,
+  ValuePropType = OptionType["value"] | OptionType["value"][] // 添加 ValuePropType
 >({
   fetchOptions,
   debounceTimeout = 300,
@@ -34,9 +44,10 @@ function DebounceSelect<
   showSelectAll = false,
   fetchAllOptions,
   ...props
-}: DebounceSelectProps<ValueType>) {
+}: DebounceSelectProps<OptionType, ValuePropType>) {
+  // 更新 props 类型
   const [fetching, setFetching] = useState(false);
-  const [options, setOptions] = useState<ValueType[]>([]);
+  const [options, setOptions] = useState<OptionType[]>([]); // 更新 options 类型
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [searchText, setSearchText] = useState("");
@@ -158,14 +169,15 @@ function DebounceSelect<
 
     // 如果当前已经全选，则清空选择
     if (currentValue.length === total && total > 0) {
-      props.onChange([], []);
+      // 将空数组断言为 ValuePropType
+      props.onChange([] as ValuePropType, []);
       return;
     }
 
     // 否则，获取所有选项并设置为已选中
     setSelectAllLoading(true);
     try {
-      let allOptions: ValueType[] = [];
+      let allOptions: OptionType[] = []; // 更新 allOptions 类型
 
       if (fetchAllOptions) {
         // 如果提供了fetchAllOptions方法，直接使用
@@ -189,7 +201,8 @@ function DebounceSelect<
       }
 
       const allValues = allOptions.map((item) => item.value);
-      props.onChange(allValues, allOptions);
+      // 将 allValues 断言为 ValuePropType
+      props.onChange(allValues as ValuePropType, allOptions);
     } catch (error) {
       console.error("Error fetching all options:", error);
     } finally {
@@ -198,7 +211,8 @@ function DebounceSelect<
   };
 
   // 自定义下拉菜单渲染
-  const dropdownRender = (menu: React.ReactNode) => {
+  const dropdownRender = (menu: React.ReactElement) => {
+    // 将 menu 类型改为 React.ReactElement
     if (!showSelectAll) {
       return menu;
     }
@@ -231,7 +245,7 @@ function DebounceSelect<
   };
 
   return (
-    <Select<ValueType | ValueType[]>
+    <Select<ValuePropType, OptionType> // 更新 Select 泛型
       filterOption={false}
       onSearch={debounceFetcher}
       onPopupScroll={handlePopupScroll}

@@ -1,20 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Card,
-  Input,
-  Button,
-  Typography,
-  Space,
-  Alert,
-  Spin,
-  Divider,
-} from "antd";
+import { Card, Input, Button, Typography, Alert, Spin, Divider } from "antd";
 import { SendOutlined, ClearOutlined, CodeOutlined } from "@ant-design/icons";
-import { serversApi, ExecuteCommandResponse } from "../../../api/servers";
+import { serversApi } from "../../../api/servers";
 import { message } from "../../../utils/message";
 import { ServerStatus } from "../../../types/api";
 
-const { Title, Text, Paragraph } = Typography;
+const { Paragraph } = Typography;
 const { TextArea } = Input;
 
 interface ServerTerminalProps {
@@ -64,12 +55,14 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
       });
 
       // 添加命令和结果到输出
-      const commandOutput = `$ ${command}\n${result.stdout}`;
+      let commandOutput = `$ ${command}\n${result.stdout}`;
       if (result.stderr) {
         commandOutput += `\n${result.stderr}`;
       }
 
-      setOutput((prev) => (prev ? `${prev}\n\n${commandOutput}` : commandOutput));
+      setOutput((prev) =>
+        prev ? `${prev}\n\n${commandOutput}` : commandOutput
+      );
       setLastExitCode(result.exitCode);
       setCommand(""); // 清空命令输入
     } catch (error) {

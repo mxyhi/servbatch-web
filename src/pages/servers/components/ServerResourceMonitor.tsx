@@ -21,7 +21,7 @@ import {
 } from "@ant-design/icons";
 import { ServerResources } from "../../../api/servers";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface ServerResourceMonitorProps {
   resources: ServerResources | undefined;

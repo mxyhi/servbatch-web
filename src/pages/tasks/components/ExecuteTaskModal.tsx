@@ -1,6 +1,5 @@
 import React from "react";
 import { Modal, Form, Button } from "antd";
-import { ServerEntity } from "../../../api/servers";
 import DebounceSelect from "../../../components/common/DebounceSelect";
 import { ID } from "../../../types/common";
 

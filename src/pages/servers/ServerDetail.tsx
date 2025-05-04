@@ -1,17 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Card,
-  Row,
-  Col,
   Typography,
   Button,
   Descriptions,
   Spin,
   Tabs,
   Space,
-  Statistic,
-  Progress,
   Alert,
 } from "antd";
 import {
@@ -21,11 +17,10 @@ import {
   DashboardOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { serversApi, ServerDetails, ServerResources } from "../../api/servers";
+import { serversApi } from "../../api/servers";
 import ServerTerminal from "./components/ServerTerminal";
 import ServerResourceMonitor from "./components/ServerResourceMonitor";
 import useAutoRefresh from "../../hooks/useAutoRefresh";
-import { message } from "../../utils/message";
 
 const { Title, Text } = Typography;
 
