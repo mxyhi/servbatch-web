@@ -120,12 +120,14 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
     }
   }, [executionHistory]);
 
-  // 处理回车键提交
+  // 处理 Ctrl+Enter / Cmd+Enter 提交
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
+    // 现在只在按下 Ctrl+Enter 或 Cmd+Enter 时提交
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault(); // 阻止默认的 Enter 行为（如换行）
       executeCommand();
     }
+    // 按下 Enter 但没有 Ctrl/Cmd 时，允许默认的换行行为
   };
 
   // --- 动态调整高度事件处理 ---
@@ -241,19 +243,19 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
           className="h-2 bg-slate-700 hover:bg-blue-600 cursor-ns-resize rounded-b-md border border-t-0 border-slate-700 flex-shrink-0" // 把手样式, 添加 flex-shrink-0, 调整边框
         ></div>
         {/* 命令输入区域 */}
-        <div className="flex items-end space-x-2 pt-4 flex-shrink-0">
+        <div className="flex items-end pt-4 flex-shrink-0 pr-2">
           {" "}
           {/* 添加 flex-shrink-0 和 pt-4 */}
           <TextArea
             value={command}
             onChange={(e) => setCommand(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="输入命令，按回车执行"
+            placeholder="输入命令，按 Ctrl+Enter (或 Cmd+Enter) 执行"
             autoSize={{ minRows: 1, maxRows: 3 }}
             disabled={isExecuting}
             className="flex-grow font-mono border border-slate-600 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 rounded-md"
           />
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 ml-2">
             <Button
               type="primary"
               icon={<SendOutlined />}
@@ -263,6 +265,7 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
               执行
             </Button>
             <Button
+              type="default" // 明确指定为 default 类型，使其视觉上次于 primary 按钮
               icon={<ClearOutlined />}
               onClick={clearOutput}
               disabled={isExecuting || executionHistory.length === 0}
@@ -280,7 +283,7 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
             {" "}
             {/* 添加 pt-4 */}
             <ul className="list-disc pl-6">
-              <li>输入命令后按回车键执行</li>
+              <li>输入命令后按 Ctrl+Enter (或 Cmd+Enter) 执行</li>
               <li>使用Shift+Enter可以在命令中换行</li>
               <li>命令执行超时时间为30秒</li>
               <li>
