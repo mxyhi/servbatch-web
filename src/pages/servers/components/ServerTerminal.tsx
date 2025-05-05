@@ -23,10 +23,21 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
   serverStatus,
 }) => {
   const [command, setCommand] = useState("");
-  const [output, setOutput] = useState<string>("");
   const [isExecuting, setIsExecuting] = useState(false);
-  const [lastExitCode, setLastExitCode] = useState<number | null>(null);
   const outputRef = useRef<HTMLDivElement>(null);
+
+  // 新增：存储执行历史记录
+  interface ExecutionRecord {
+    id: number; // 用于 React key
+    command: string;
+    stdout: string;
+    stderr?: string;
+    exitCode: number | null;
+  }
+  const [executionHistory, setExecutionHistory] = useState<ExecutionRecord[]>(
+    []
+  );
+  const executionCounter = useRef(0); // 用于生成唯一 ID
 
   // 如果服务器离线，显示警告
   if (serverStatus !== "online") {
@@ -49,23 +60,35 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
 
     try {
       setIsExecuting(true);
+      const trimmedCommand = command.trim();
       const result = await serversApi.executeCommand(serverId, {
-        command: command.trim(),
+        command: trimmedCommand,
         timeout: 30, // 默认30秒超时
       });
 
-      // 添加命令和结果到输出
-      let commandOutput = `$ ${command}\n${result.stdout}`;
-      if (result.stderr) {
-        commandOutput += `\n${result.stderr}`;
-      }
+      // 新增：创建执行记录并添加到历史
+      const newRecord: ExecutionRecord = {
+        id: executionCounter.current++,
+        command: trimmedCommand,
+        stdout: result.stdout,
+        stderr: result.stderr,
+        exitCode: result.exitCode,
+      };
+      setExecutionHistory((prev) => [...prev, newRecord]);
 
-      setOutput((prev) =>
-        prev ? `${prev}\n\n${commandOutput}` : commandOutput
-      );
-      setLastExitCode(result.exitCode);
       setCommand(""); // 清空命令输入
     } catch (error) {
+      // 如果API调用失败，也记录一个失败的块
+      const errorRecord: ExecutionRecord = {
+        id: executionCounter.current++,
+        command: command.trim(),
+        stdout: "",
+        stderr: `执行命令失败: ${
+          error instanceof Error ? error.message : "未知错误"
+        }`,
+        exitCode: -1, // 使用特殊退出码表示执行错误
+      };
+      setExecutionHistory((prev) => [...prev, errorRecord]);
       message.error(
         `执行命令失败: ${error instanceof Error ? error.message : "未知错误"}`
       );
@@ -74,10 +97,10 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
     }
   };
 
-  // 清空输出
+  // 清空输出历史
   const clearOutput = () => {
-    setOutput("");
-    setLastExitCode(null);
+    setExecutionHistory([]);
+    // lastExitCode 不再需要单独管理，它是记录的一部分
   };
 
   // 滚动到输出底部
@@ -85,7 +108,7 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
     if (outputRef.current) {
       outputRef.current.scrollTop = outputRef.current.scrollHeight;
     }
-  }, [output]);
+  }, [executionHistory]); // 依赖改为 executionHistory
 
   // 处理回车键提交
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -109,32 +132,57 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
         {/* 终端输出区域 */}
         <div
           ref={outputRef}
-          className="bg-gray-900 text-gray-200 p-4 rounded-md h-80 overflow-auto font-mono"
+          className="bg-slate-900 text-slate-200 p-4 rounded-md h-80 overflow-auto font-mono border border-slate-700 space-y-4" // 添加 space-y-4
         >
-          {output ? (
-            <pre className="whitespace-pre-wrap">{output}</pre>
+          {executionHistory.length > 0 ? (
+            executionHistory.map((record) => (
+              <div
+                key={record.id}
+                className="border border-slate-700 rounded-md p-3 bg-slate-800/50" // 块级样式
+              >
+                {/* 命令 */}
+                <div className="text-cyan-400 mb-1">
+                  <span className="select-none">$ </span>
+                  {record.command}
+                </div>
+                {/* 标准输出 */}
+                {record.stdout && (
+                  <pre className="whitespace-pre-wrap text-slate-200">
+                    {record.stdout}
+                  </pre>
+                )}
+                {/* 标准错误 */}
+                {record.stderr && (
+                  <pre className="whitespace-pre-wrap text-rose-400">
+                    {record.stderr}
+                  </pre>
+                )}
+                {/* 退出码 */}
+                {record.exitCode !== null && (
+                  <div
+                    className={`text-right text-xs mt-1 font-medium ${
+                      record.exitCode === 0
+                        ? "text-emerald-500"
+                        : "text-rose-500"
+                    }`}
+                  >
+                    退出码: {record.exitCode}
+                  </div>
+                )}
+              </div>
+            ))
           ) : (
-            <div className="text-gray-500 italic">
-              输出将显示在这里。输入命令并按回车键执行。
+            <div className="text-slate-400 italic">
+              执行记录将显示在这里。输入命令并按回车键执行。
             </div>
           )}
+          {/* 执行中提示移到末尾 */}
           {isExecuting && (
-            <div className="mt-2">
+            <div className="flex items-center text-slate-400 mt-2">
               <Spin size="small" /> <span className="ml-2">执行中...</span>
             </div>
           )}
         </div>
-
-        {/* 退出码显示 */}
-        {lastExitCode !== null && (
-          <div
-            className={`text-right ${
-              lastExitCode === 0 ? "text-green-500" : "text-red-500"
-            }`}
-          >
-            退出码: {lastExitCode}
-          </div>
-        )}
 
         {/* 命令输入区域 */}
         <div className="flex space-x-2">
@@ -145,7 +193,7 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
             placeholder="输入命令，按回车执行"
             autoSize={{ minRows: 1, maxRows: 3 }}
             disabled={isExecuting}
-            className="font-mono"
+            className="font-mono focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <div className="flex flex-col space-y-2">
             <Button
@@ -159,7 +207,7 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
             <Button
               icon={<ClearOutlined />}
               onClick={clearOutput}
-              disabled={isExecuting || !output}
+              disabled={isExecuting || executionHistory.length === 0} // 依赖改为 executionHistory
             >
               清空
             </Button>
@@ -169,7 +217,7 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
         {/* 使用提示 */}
         <Divider dashed />
         <Paragraph type="secondary" className="text-sm">
-          <ul className="list-disc pl-5">
+          <ul className="list-disc pl-6">
             <li>输入命令后按回车键执行</li>
             <li>使用Shift+Enter可以在命令中换行</li>
             <li>命令执行超时时间为30秒</li>
