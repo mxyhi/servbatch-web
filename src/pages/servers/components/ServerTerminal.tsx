@@ -195,13 +195,14 @@ const ServerTerminal: React.FC<ServerTerminalProps> = ({
                 className="border border-slate-700 rounded-md p-3 bg-slate-800/50" // 块级样式
               >
                 {/* 命令 */}
-                <div className="text-cyan-400 mb-1">
+                <div className="text-cyan-400 mb-1 whitespace-pre-wrap">
                   <span className="select-none">$ </span>
                   {record.command}
                 </div>
                 {/* 标准输出 */}
                 {record.stdout && (
-                  <pre className="whitespace-pre-wrap text-slate-200">
+                  <pre className="whitespace-pre-wrap text-white">
+                    {/* 改为 text-white 以区分输入 */}
                     {record.stdout}
                   </pre>
                 )}
